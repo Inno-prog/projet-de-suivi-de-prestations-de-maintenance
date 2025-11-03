@@ -8,6 +8,22 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/components/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
+    path: 'about',
+    loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent)
+  },
+  {
+    path: 'contact',
+    loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent)
+  },
+  {
+    path: 'services/maintenance',
+    loadComponent: () => import('./features/services-maintenance/services-maintenance.component').then(m => m.ServicesMaintenanceComponent)
+  },
+  {
+    path: 'services/reports',
+    loadComponent: () => import('./features/services-reports/services-reports.component').then(m => m.ReportsComponent)
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/components/login/login.component').then(m => m.LoginComponent)
   },

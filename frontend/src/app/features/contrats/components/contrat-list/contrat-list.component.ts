@@ -27,21 +27,6 @@ import { UserService } from '../../../../core/services/user.service';
             <form [formGroup]="contratForm" (ngSubmit)="onSubmit()" class="contrat-form">
             <h2 class="form-title">{{ isEditing ? 'Modifier' : 'Créer' }} un Contrat</h2>
             
-            <div class="form-group">
-              <label for="numeroContrat">Numéro de Contrat</label>
-              <input
-                type="number"
-                id="numeroContrat"
-                formControlName="numeroContrat"
-                placeholder="Entrez le numéro du contrat"
-                class="line-input"
-                [class.error]="contratForm.get('numeroContrat')?.invalid && contratForm.get('numeroContrat')?.touched"
-              />
-              <div class="input-line" [class.error]="contratForm.get('numeroContrat')?.invalid && contratForm.get('numeroContrat')?.touched"></div>
-              <div class="error-message" *ngIf="contratForm.get('numeroContrat')?.invalid && contratForm.get('numeroContrat')?.touched">
-                Le numéro du contrat est requis
-              </div>
-            </div>
 
             <div class="form-group">
               <label for="nomPrestataire">Prestataire</label>
@@ -555,7 +540,6 @@ export class ContratListComponent implements OnInit {
     private userService: UserService
   ) {
     this.contratForm = this.formBuilder.group({
-      numeroContrat: ['', Validators.required],
       nomPrestataire: ['', Validators.required],
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
@@ -622,7 +606,6 @@ export class ContratListComponent implements OnInit {
       if (confirmed) {
         this.loading = true;
         const contratData = this.contratForm.value;
-        contratData.idContrat = contratData.numeroContrat;
         contratData.typeContrat = 'Maintenance';
 
         if (this.isEditing && this.editingId) {
@@ -662,7 +645,6 @@ export class ContratListComponent implements OnInit {
     this.showCreateForm = true;
     
     this.contratForm.patchValue({
-      numeroContrat: contrat.idContrat,
       nomPrestataire: contrat.nomPrestataire,
       dateDebut: contrat.dateDebut,
       dateFin: contrat.dateFin,

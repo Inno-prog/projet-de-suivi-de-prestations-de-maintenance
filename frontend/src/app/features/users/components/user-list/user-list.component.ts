@@ -585,7 +585,8 @@ export class UserListComponent implements OnInit {
       contact: [''],
       adresse: [''],
       role: ['USER', Validators.required],
-      qualification: ['']
+      qualification: [''],
+      password: ['default123'] // Add default password
     });
   }
 
@@ -667,7 +668,8 @@ export class UserListComponent implements OnInit {
       contact: '',
       adresse: '',
       role: 'USER',
-      qualification: ''
+      qualification: '',
+      password: 'default123'
     });
     this.showUserModal = true;
   }
@@ -695,7 +697,8 @@ export class UserListComponent implements OnInit {
       contact: '',
       adresse: '',
       role: 'USER',
-      qualification: ''
+      qualification: '',
+      password: 'default123'
     });
   }
 

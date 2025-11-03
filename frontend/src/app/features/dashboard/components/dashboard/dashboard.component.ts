@@ -209,83 +209,189 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     </div>
 
     <ng-template #publicView>
-      <div class="public-layout">
-        <nav class="navbar">
-          <div class="container">
-            <div class="nav-brand">
-              <div class="logo">
-                <img src="/assets/logoFinal.png" alt="DGSI Logo" class="logo-image">
-              </div>
-            </div>
+     <div class="public-layout">
+       <nav class="navbar">
+         <div class="container">
+           <div class="nav-brand">
+             <div class="logo">
+               <img src="/assets/logoFinal.png" alt="DGSI Logo" class="logo-image">
+             </div>
+           </div>
 
-            <div class="nav-actions">
-              <a routerLink="/login" class="btn btn-outline">Connexion</a>
-              <a routerLink="/register" class="btn btn-primary">S'inscrire</a>
-            </div>
-          </div>
-        </nav>
+           <div class="nav-menu">
+             <div class="nav-item dropdown">
+               <button class="nav-link">La DGSI <span class="dropdown-arrow">▼</span></button>
+               <div class="dropdown-menu">
+                 <a href="https://www.finances.gov.bf/accueil" target="_blank" class="dropdown-item">Notre site web</a>
+                 <a routerLink="/about" class="dropdown-item">Qui sommes-nous</a>
+               </div>
+             </div>
 
-        <main class="main-content">
-          <div class="floating-shapes">
-            <div class="shape shape-1">⚡</div>
-            <div class="shape shape-2">🔧</div>
-            <div class="shape shape-3">📊</div>
-            <div class="shape shape-4">🚀</div>
-            <div class="shape shape-5">💡</div>
-            <div class="shape shape-6">🔒</div>
-          </div>
-          <div class="container">
-            <div class="dashboard-header" style="max-width: 70%; margin: 4rem auto 5rem auto;">
-              <div class="welcome-section">
-                <h1>Bienvenue sur <span class="text-primary">DGSI Maintenance</span></h1>
-                <p>Plateforme de suivi rigoureux des prestations de maintenance informatique</p>
-                <p class="subtitle">Développé par Direction Générale des Systèmes d'Information</p>
-              </div>
-              
-              <div class="cta-section">
-                <a href="https://www.it.finances.gov.bf" target="_blank" class="btn btn-primary">
-                  En savoir plus
-                  <span>→</span>
-                </a>
-              </div>
-            </div>
+             <div class="nav-item dropdown">
+               <button class="nav-link">Contacts <span class="dropdown-arrow">▼</span></button>
+               <div class="dropdown-menu">
+                 <a href="mailto:contact@dgsi.bf" class="dropdown-item">Nous envoyer un mail</a>
+                 <a routerLink="/contact" class="dropdown-item">Nous contacter</a>
+               </div>
+             </div>
 
-            <div class="features-section">
-              <div class="feature-card" routerLink="/login">
-                <div class="feature-icon">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 8H17V6C17 4.9 16.1 4 15 4H9C7.9 4 7 4.9 7 6V8H4C2.9 8 2 8.9 2 10V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V10C22 8.9 21.1 8 20 8ZM9 6H15V8H9V6ZM20 19H4V10H8V12H16V10H20V19Z" fill="#F97316"/>
-                  </svg>
-                </div>
-                <h3>Gestion Prestations</h3>
-                <p>Création et gestion complète des prestataires avec leurs items associés</p>
-              </div>
+             <div class="nav-item dropdown">
+               <button class="nav-link">Nos services <span class="dropdown-arrow">▼</span></button>
+               <div class="dropdown-menu">
+                 <a routerLink="/services/maintenance" class="dropdown-item">Suivi de prestation de maintenance</a>
+                 <a routerLink="/services/reports" class="dropdown-item">Rapports et évaluations</a>
+               </div>
+             </div>
+           </div>
 
-              <div class="feature-card" routerLink="/login">
-                <div class="feature-icon">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="#F97316"/>
-                  </svg>
-                </div>
-                <h3>Suivi Sécurisé</h3>
-                <p>Suivi rigoureux de l'exécution des prestations de maintenance</p>
-              </div>
+           <div class="nav-actions">
+             <ng-container *ngIf="!authService.isAuthenticated()">
+               <a routerLink="/login" class="btn btn-outline">Connexion</a>
+               <button class="btn btn-primary" (click)="redirectToKeycloakRegistration()">S'inscrire</button>
+             </ng-container>
+           </div>
+         </div>
+       </nav>
 
-              <div class="feature-card" routerLink="/login">
-                <div class="feature-icon">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V7H5V3H13V7C13 8.1 13.9 9 15 9H21ZM7 10C5.9 10 5 10.9 5 12V20C5 21.1 5.9 22 7 22H17C18.1 22 19 21.1 19 20V12C19 10.9 18.1 10 17 10H7ZM12 18.5C10.29 18.5 8.93 17.14 8.93 15.43C8.93 13.72 10.29 12.36 12 12.36C13.71 12.36 15.07 13.72 15.07 15.43C15.07 17.14 13.71 18.5 12 18.5Z" fill="#F97316"/>
-                  </svg>
-                </div>
-                <h3>Rapports et Évaluations
-                </h3>
-                <p>Évaluation continue des prestataires selon des critères standardisés</p>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    </ng-template>
+       <main class="main-content">
+         <div class="floating-shapes">
+           <div class="shape shape-1">⚡</div>
+           <div class="shape shape-2">🔧</div>
+           <div class="shape shape-3">📊</div>
+           <div class="shape shape-4">🚀</div>
+           <div class="shape shape-5">💡</div>
+           <div class="shape shape-6">🔒</div>
+         </div>
+         <div class="container">
+           <div class="dashboard-header" style="max-width: 65%; margin: 0 auto; margin-top: 50px; margin-bottom: 30px; padding: 3rem 2rem; background: linear-gradient(135deg, #0a192f 0%, #0d1b2a 100%); border-top: 1px solid #1e293b;">
+             <div class="welcome-section">
+               <h1 class="animated-title">
+                 <span class="title-text">Bienvenue sur </span><span class="title-text-3d">DGSI Maintenance</span>
+               </h1>
+               <p class="animated-subtitle" style="animation-delay: 0.8s">Plateforme de suivi rigoureux des prestations de maintenance informatique</p>
+               <p class="subtitle animated-subtitle" style="animation-delay: 1s">Développé par Direction Générale des Systèmes d'Information</p>
+             </div>
+
+             <div class="cta-section">
+               <a href="https://www.finances.gov.bf/accueil" target="_blank" class="btn btn-primary animated-cta" style="animation-delay: 1.2s">
+                 <span class="btn-text">En savoir plus</span>
+                 <span class="btn-arrow">→</span>
+               </a>
+             </div>
+           </div>
+
+           <div class="features-section" style="margin-top: 80px; margin-bottom: 75px;">
+             <div class="feature-card" routerLink="/login" [class.animate]="true" style="animation-delay: 0.2s">
+               <div class="feature-icon">
+                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <path d="M20 8H17V6C17 4.9 16.1 4 15 4H9C7.9 4 7 4.9 7 6V8H4C2.9 8 2 8.9 2 10V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V10C22 8.9 21.1 8 20 8ZM9 6H15V8H9V6ZM20 19H4V10H8V12H16V10H20V19Z" fill="#F97316"/>
+                 </svg>
+               </div>
+               <h3>Gestion Prestations</h3>
+               <p>Création et gestion complète des prestataires avec leurs items associés</p>
+               <div class="card-glow"></div>
+             </div>
+
+             <div class="feature-card" routerLink="/login" [class.animate]="true" style="animation-delay: 0.4s">
+               <div class="feature-icon">
+                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="#F97316"/>
+                 </svg>
+               </div>
+               <h3>Suivi Sécurisé</h3>
+               <p>Suivi rigoureux de l'exécution des prestations de maintenance</p>
+               <div class="card-glow"></div>
+             </div>
+
+             <div class="feature-card" routerLink="/login" [class.animate]="true" style="animation-delay: 0.6s">
+               <div class="feature-icon">
+                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V7H5V3H13V7C13 8.1 13.9 9 15 9H21ZM7 10C5.9 10 5 10.9 5 12V20C5 21.1 5.9 22 7 22H17C18.1 22 19 21.1 19 20V12C19 10.9 18.1 10 17 10H7ZM12 18.5C10.29 18.5 8.93 17.14 8.93 15.43C8.93 13.72 10.29 12.36 12 12.36C13.71 12.36 15.07 13.72 15.07 15.43C15.07 17.14 13.71 18.5 12 18.5Z" fill="#F97316"/>
+                 </svg>
+               </div>
+               <h3>Rapports et Évaluations</h3>
+               <p>Évaluation continue des prestataires selon des critères standardisés</p>
+               <div class="card-glow"></div>
+             </div>
+           </div>
+
+         </div>
+       </main>
+
+       <footer class="professional-footer" style="margin-top: -60px; max-width: 90%; position: relative; z-index: 5; margin-left: 70px">
+         <div class="footer-container" style="margin-top: 2px;">
+           <!-- Colonne Contact -->
+           <div class="footer-column">
+             <h4>Contact</h4>
+             <div class="contact-info">
+               <div class="contact-item">
+                 <span class="icon">📧</span>
+                 <span>contact&#64;dgsi.bf</span>
+               </div>
+               <div class="contact-item">
+                 <span class="icon">📞</span>
+                 <span>+226 25 30 70 00</span>
+               </div>
+               <div class="contact-item">
+                 <span class="icon">📍</span>
+                 <span>Direction Générale des Systèmes d'Information<br>Ouagadougou, Burkina Faso</span>
+               </div>
+             </div>
+           </div>
+
+           <!-- Colonne Liens rapides -->
+           <div class="footer-column">
+             <h4>Liens rapides</h4>
+             <ul class="footer-links">
+               <li><a routerLink="/about">À propos de la DGSI</a></li>
+               <li><a routerLink="/services/maintenance">Suivi de maintenance</a></li>
+               <li><a routerLink="/services/reports">Rapports & Évaluations</a></li>
+               <li><a routerLink="/contact">Nous contacter</a></li>
+               <li><a href="https://www.finances.gov.bf" target="_blank">Ministère des Finances</a></li>
+             </ul>
+           </div>
+
+           <!-- Colonne Services -->
+           <div class="footer-column">
+             <h4>Nos services</h4>
+             <ul class="footer-links">
+               <li><a routerLink="/services/maintenance">Maintenance informatique</a></li>
+               <li><a routerLink="/services/reports">Évaluation prestataires</a></li>
+               <li><a routerLink="/fiches-prestation">Gestion des prestations</a></li>
+               <li><a routerLink="/contrats">Gestion des contrats</a></li>
+               <li><a routerLink="/statistiques">Tableaux de bord</a></li>
+             </ul>
+           </div>
+
+           <!-- Colonne Réseaux sociaux -->
+           <div class="footer-column">
+             <h4>Restons connectés</h4>
+             <ul class="footer-links">
+               <li><a href="mailto:contact@dgsi.bf">📧 Email</a></li>
+               <li><a href="https://www.finances.gov.bf" target="_blank">🌐 Site officiel</a></li>
+               <li><a href="tel:+22625307000">📞 Support</a></li>
+             </ul>
+           </div>
+
+         </div>
+
+         <!-- Barre du bas -->
+         <div class="footer-bottom">
+           <div class="footer-bottom-container">
+             <div class="copyright">
+               &copy; 2025 Direction Générale des Systèmes d'Information. Tous droits réservés.
+             </div>
+             <div class="legal-links">
+               <a href="/about">À propos</a>
+               <a href="/contact">Contact</a>
+               <a href="https://www.finances.gov.bf" target="_blank">Ministère</a>
+               <a href="/login">Connexion</a>
+             </div>
+           </div>
+         </div>
+       </footer>
+     </div>
+</ng-template>
   `,
   styles: [`
     .public-layout {
@@ -295,25 +401,13 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     }
 
     .navbar {
-      background: rgba(30, 41, 59, 0.9);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
+      background: linear-gradient(135deg, #0a192f 0%, #0d1b2a 100%);
+      border-bottom: 1px solid #1e293b;
+      color: #e2e8f0;
       padding: 1rem 0;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       position: relative;
       z-index: 10;
-    }
-
-    .navbar::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.9) 100%);
-      z-index: -1;
     }
 
     .navbar .container {
@@ -348,6 +442,139 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       object-fit: contain;
     }
 
+
+    .nav-menu {
+      display: flex;
+      gap: 5rem;
+      align-items: center;
+      margin-left: 4rem;
+    }
+
+    .nav-item {
+      position: relative;
+      z-index: 1000;
+    }
+
+    .nav-link {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .nav-link:hover::before {
+      left: 100%;
+    }
+
+    .nav-link:hover {
+      background: rgba(249, 115, 22, 0.1);
+      color: #f97316;
+    }
+
+    .dropdown-arrow {
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-item:hover .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .nav-item .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      color: #0f172a;
+      border-radius: 0;
+      box-shadow: 0 20px 40px rgba(2,6,23,0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      min-width: 420px;
+      width: max-content;
+      padding: 1rem 0;
+      list-style: none;
+      margin: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1001;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      overflow: visible;
+    }
+
+    .nav-item:hover .dropdown-menu,
+    .nav-item:focus-within .dropdown-menu {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .nav-item .dropdown-item {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      color: #374151 !important;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+      border-radius: 8px;
+      margin: 0 0.5rem;
+      white-space: nowrap;
+    }
+
+    .nav-item .dropdown-item:hover {
+      color: white !important;
+      background: linear-gradient(90deg, var(--primary), #ea580c);
+    }
+
+    .nav-item .dropdown-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #ea580c);
+      border-radius: 8px;
+      transition: width 0.3s ease;
+      z-index: -1;
+    }
+
+    .nav-item .dropdown-item:hover::before {
+      width: 100%;
+    }
+
+    .nav-item .dropdown-item:hover {
+      color: white;
+      transform: translateX(4px);
+    }
+
+    .nav-item .dropdown-item:first-child {
+      margin-top: 0.5rem;
+    }
+
+    .nav-item .dropdown-item:last-child {
+      margin-bottom: 0.5rem;
+    }
 
     .nav-actions {
       display: flex;
@@ -521,11 +748,14 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 
     .dashboard-header {
       background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      color: white;
-      padding: 4rem 2rem;
+      border-top: 1px solid #475569;
+      color: #e2e8f0;
+      padding: 3rem 2rem;
       border-radius: 16px;
-      margin: 4rem auto 5rem auto;
-      max-width: 70%;
+      margin: 0 auto;
+      margin-top: 50px;
+      margin-bottom: 30px;
+      max-width: 95%;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -536,7 +766,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       font-size: 3rem;
       font-weight: 700;
       margin-bottom: 1rem;
-      color: white;
+      color: #f8fafc;
     }
 
     .text-primary {
@@ -545,7 +775,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 
     .welcome-section p {
       font-size: 1.25rem;
-      color: #e2e8f0;
+      color: #cbd5e1;
       margin-bottom: 0.5rem;
     }
 
@@ -669,7 +899,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     }
 
     .feature-card {
-      background: white;
+      background: #ffffff;
       padding: 2.25rem 1.75rem;
       border-radius: 14px;
       box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
@@ -703,6 +933,17 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     .feature-card:nth-child(2) { animation-delay: 0.2s; }
     .feature-card:nth-child(3) { animation-delay: 0.3s; }
 
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -714,10 +955,80 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       }
     }
 
+    .animated-title {
+      display: inline-block;
+    }
+
+    .title-text {
+      display: inline-block;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    .title-text-3d {
+      display: inline-block;
+      background: linear-gradient(135deg, #F97316 0%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeInUp 1s ease-out 0.3s both;
+      text-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+    }
+
+    .animated-subtitle {
+      animation: fadeInUp 1s ease-out both;
+      opacity: 0;
+    }
+
+    .animated-cta {
+      animation: fadeInUp 1s ease-out both;
+      opacity: 0;
+    }
+
+    .btn-text {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-arrow {
+      display: inline-block;
+      margin-left: 0.5rem;
+      transition: transform 0.2s ease;
+    }
+
+    .animated-cta:hover .btn-text {
+      transform: translateX(-4px);
+    }
+
+    .animated-cta:hover .btn-arrow {
+      transform: translateX(4px);
+    }
+
     .feature-card:hover {
       transform: translateY(-8px) scale(1.01);
       box-shadow: 0 22px 60px rgba(2, 6, 23, 0.12);
       border-color: #F97316;
+    }
+
+    .feature-card.animate {
+      animation: slideUp 0.8s ease-out forwards;
+      opacity: 0;
+    }
+
+    .card-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, transparent 50%);
+      border-radius: 14px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .feature-card:hover .card-glow {
+      opacity: 1;
     }
 
     .feature-icon {
@@ -939,6 +1250,203 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       color: #4b5563;
     }
 
+    .professional-footer {
+      background: linear-gradient(135deg, #0a192f 0%, #0d1b2a 100%);
+      color: #e2e8f0;
+      border-top: 1px solid #1e293b;
+      margin-top: auto;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 50px 20px 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
+    }
+
+    .footer-column {
+      transition: transform 0.3s ease;
+    }
+
+    .footer-column:hover {
+      transform: translateY(-5px);
+    }
+
+    .footer-column h4 {
+      color: #f8fafc;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .footer-column h4::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 30px;
+      height: 2px;
+      background: #f97316;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .contact-item .icon {
+      color: #f97316;
+      font-size: 1.1rem;
+      min-width: 20px;
+    }
+
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+
+    .footer-links a {
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .footer-links a:hover {
+      color: #f97316;
+      padding-left: 5px;
+    }
+
+    .social-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .social-link:hover {
+      color: #f97316;
+      transform: translateX(5px);
+    }
+
+    .newsletter {
+      margin-top: 1.5rem;
+    }
+
+    .newsletter p {
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .newsletter-form input::placeholder {
+      color: #94a3b8;
+    }
+
+    .newsletter-form button {
+      padding: 0.5rem 1rem;
+      background: #F97316;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .newsletter-form button:hover {
+      background: #ea580c;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #1e293b;
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .footer-bottom-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .copyright {
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+
+    .legal-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .legal-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.3s ease;
+    }
+
+    .legal-links a:hover {
+      color: #f97316;
+    }
+
     @media (max-width: 768px) {
       .dashboard-header {
         flex-direction: column;
@@ -968,6 +1476,56 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 
       .shape {
         font-size: 1.5rem;
+      }
+
+      .footer-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 40px 20px 20px;
+      }
+
+      .footer-bottom-container {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .legal-links {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .footer-container {
+        padding: 30px 15px 15px;
+      }
+
+      .legal-links {
+        gap: 10px;
+      }
+
+      .legal-links a {
+        font-size: 0.8rem;
+      }
+
+      .footer-bottom-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 0 1rem;
+      }
+
+      .legal-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .social-links {
+        justify-content: center;
+      }
+
+      .newsletter-form {
+        flex-direction: column;
       }
     }
   `]
@@ -999,6 +1557,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private confirmationService: ConfirmationService
   ) {}
+
+  redirectToKeycloakRegistration(): void {
+    // TODO: Implement Keycloak registration redirect
+    this.router.navigate(['/register']);
+  }
 
   ngOnInit(): void {
     // Si l'utilisateur est déjà présent et est administrateur, charger les statistiques immédiatement
