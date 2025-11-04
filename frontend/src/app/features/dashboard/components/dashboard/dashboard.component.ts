@@ -235,12 +235,13 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                </div>
              </div>
 
-             <div class="nav-item dropdown">
-               <button class="nav-link">Nos services <span class="dropdown-arrow">▼</span></button>
-               <div class="dropdown-menu">
-                 <a routerLink="/services/maintenance" class="dropdown-item">Suivi de prestation de maintenance</a>
-                 <a routerLink="/services/reports" class="dropdown-item">Rapports et évaluations</a>
-               </div>
+
+
+             <div class="nav-item">
+               <a routerLink="/about" class="nav-link">À propos</a>
+             </div>
+             <div class="nav-item">
+               <a href="https://www.finances.gov.bf" target="_blank" class="nav-link">Ministère</a>
              </div>
            </div>
 
@@ -266,22 +267,41 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
            <div class="dashboard-header" style="max-width: 65%; margin: 0 auto; margin-top: 50px; margin-bottom: 30px; padding: 3rem 2rem; background: linear-gradient(135deg, #0a192f 0%, #0d1b2a 100%); border-top: 1px solid #1e293b;">
              <div class="welcome-section">
                <h1 class="animated-title">
-                 <span class="title-text">Bienvenue sur </span><span class="title-text-3d">DGSI Maintenance</span>
+                 <span class="title-text">Bienvenue sur </span><span class="title-text-3d" style="margin-left: 10px;"> MainTrack Pro </span>
                </h1>
-               <p class="animated-subtitle" style="animation-delay: 0.8s">Plateforme de suivi rigoureux des prestations de maintenance informatique</p>
-               <p class="subtitle animated-subtitle" style="animation-delay: 1s">Développé par Direction Générale des Systèmes d'Information</p>
+               <p class="animated-subtitle">
+                 <span class="word" style="animation-delay: 0.8s">Notre</span>
+                 <span class="word" style="animation-delay: 1s">plateforme</span>
+                 <span class="word" style="animation-delay: 1.2s">de</span>
+                 <span class="word" style="animation-delay: 1.4s">suivi</span>
+                 <span class="word" style="animation-delay: 1.6s">professionnel</span>
+                 <span class="word" style="animation-delay: 1.8s">des</span>
+                 <span class="word" style="animation-delay: 2s">prestations</span>
+                 <span class="word" style="animation-delay: 2.2s">de</span>
+                 <span class="word" style="animation-delay: 2.4s">maintenance</span>
+                 <span class="word" style="animation-delay: 2.6s">informatique</span>
+               </p>
+               <p class="subtitle animated-subtitle">
+                 <span class="word" style="animation-delay: 2.8s">Développé</span>
+                 <span class="word" style="animation-delay: 3s">par</span>
+                 <span class="word" style="animation-delay: 3.2s">Direction</span>
+                 <span class="word" style="animation-delay: 3.4s">Générale</span>
+                 <span class="word" style="animation-delay: 3.6s">des</span>
+                 <span class="word" style="animation-delay: 3.8s">Systèmes</span>
+                 <span class="word" style="animation-delay: 4s">d'Information</span>
+               </p>
              </div>
 
              <div class="cta-section">
-               <a href="https://www.finances.gov.bf/accueil" target="_blank" class="btn btn-primary animated-cta" style="animation-delay: 1.2s">
+               <a href="https://it.finances.bf/" target="_blank" class="btn btn-primary animated-cta" style="animation-delay: 1.2s">
                  <span class="btn-text">En savoir plus</span>
-                 <span class="btn-arrow">→</span>
+                 <span class="btn-arrow"></span>
                </a>
              </div>
            </div>
 
            <div class="features-section" style="margin-top: 80px; margin-bottom: 75px;">
-             <div class="feature-card" routerLink="/login" [class.animate]="true" style="animation-delay: 0.2s">
+             <div class="feature-card animate" routerLink="/login" style="animation-delay: 0.2s">
                <div class="feature-icon">
                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                    <path d="M20 8H17V6C17 4.9 16.1 4 15 4H9C7.9 4 7 4.9 7 6V8H4C2.9 8 2 8.9 2 10V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19V10C22 8.9 21.1 8 20 8ZM9 6H15V8H9V6ZM20 19H4V10H8V12H16V10H20V19Z" fill="#F97316"/>
@@ -292,7 +312,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                <div class="card-glow"></div>
              </div>
 
-             <div class="feature-card" routerLink="/login" [class.animate]="true" style="animation-delay: 0.4s">
+             <div class="feature-card animate" routerLink="/login" style="animation-delay: 0.4s">
                <div class="feature-icon">
                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                    <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="#F97316"/>
@@ -303,7 +323,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                <div class="card-glow"></div>
              </div>
 
-             <div class="feature-card" routerLink="/login" [class.animate]="true" style="animation-delay: 0.6s">
+             <div class="feature-card animate" routerLink="/login" style="animation-delay: 0.6s">
                <div class="feature-icon">
                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V7H5V3H13V7C13 8.1 13.9 9 15 9H21ZM7 10C5.9 10 5 10.9 5 12V20C5 21.1 5.9 22 7 22H17C18.1 22 19 21.1 19 20V12C19 10.9 18.1 10 17 10H7ZM12 18.5C10.29 18.5 8.93 17.14 8.93 15.43C8.93 13.72 10.29 12.36 12 12.36C13.71 12.36 15.07 13.72 15.07 15.43C15.07 17.14 13.71 18.5 12 18.5Z" fill="#F97316"/>
@@ -318,19 +338,19 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
          </div>
        </main>
 
-       <footer class="professional-footer" style="margin-top: -60px; max-width: 90%; position: relative; z-index: 5; margin-left: 70px">
-         <div class="footer-container" style="margin-top: 2px;">
+       <footer class="professional-footer" style="margin-top: -50px;">
+         <div class="footer-container" style="margin-top: -20px;">
            <!-- Colonne Contact -->
            <div class="footer-column">
              <h4>Contact</h4>
              <div class="contact-info">
                <div class="contact-item">
                  <span class="icon">📧</span>
-                 <span>contact&#64;dgsi.bf</span>
+                 <a href="mailto:contact@dgsi.bf">contact&#64;dgsi.bf</a>
                </div>
                <div class="contact-item">
                  <span class="icon">📞</span>
-                 <span>+226 25 30 70 00</span>
+                 <a href="tel:+22625307000">+226 25 30 70 00</a>
                </div>
                <div class="contact-item">
                  <span class="icon">📍</span>
@@ -346,7 +366,6 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                <li><a routerLink="/about">À propos de la DGSI</a></li>
                <li><a routerLink="/services/maintenance">Suivi de maintenance</a></li>
                <li><a routerLink="/services/reports">Rapports & Évaluations</a></li>
-               <li><a routerLink="/contact">Nous contacter</a></li>
                <li><a href="https://www.finances.gov.bf" target="_blank">Ministère des Finances</a></li>
              </ul>
            </div>
@@ -362,17 +381,6 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
                <li><a routerLink="/statistiques">Tableaux de bord</a></li>
              </ul>
            </div>
-
-           <!-- Colonne Réseaux sociaux -->
-           <div class="footer-column">
-             <h4>Restons connectés</h4>
-             <ul class="footer-links">
-               <li><a href="mailto:contact@dgsi.bf">📧 Email</a></li>
-               <li><a href="https://www.finances.gov.bf" target="_blank">🌐 Site officiel</a></li>
-               <li><a href="tel:+22625307000">📞 Support</a></li>
-             </ul>
-           </div>
-
          </div>
 
          <!-- Barre du bas -->
@@ -381,11 +389,22 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
              <div class="copyright">
                &copy; 2025 Direction Générale des Systèmes d'Information. Tous droits réservés.
              </div>
-             <div class="legal-links">
-               <a href="/about">À propos</a>
-               <a href="/contact">Contact</a>
-               <a href="https://www.finances.gov.bf" target="_blank">Ministère</a>
-               <a href="/login">Connexion</a>
+             <div class="social-links">
+               <a href="https://www.facebook.com/It-Finances-Burkina-1921685034559116/" target="_blank" class="social-link" title="Facebook">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                 </svg>
+               </a>
+               <a href="https://x.com/FinancesBf" target="_blank" class="social-link" title="Twitter">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                 </svg>
+               </a>
+               <a href="https://mailer.gov.bf/" target="_blank" class="social-link" title="Webmail">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                 </svg>
+               </a>
              </div>
            </div>
          </div>
@@ -899,19 +918,21 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     }
 
     .feature-card {
-      background: #ffffff;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
       padding: 2.25rem 1.75rem;
       border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.12), 0 0 0 1px rgba(249, 115, 22, 0.1);
       text-align: center;
       transition: transform 240ms cubic-bezier(.2,.8,.2,1), box-shadow 240ms cubic-bezier(.2,.8,.2,1);
-      border: 1px solid #eef2f7;
+      border: 1px solid rgba(249, 115, 22, 0.2);
       width: 100%;
       max-width: 420px; /* limit width so space appears between cards on large screens */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
+      position: relative;
+      overflow: hidden;
     }
 
     .feature-card::before {
@@ -979,6 +1000,24 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       opacity: 0;
     }
 
+    .word {
+      display: inline-block;
+      opacity: 0;
+      animation: fadeInWord 0.8s ease-out forwards, slideWord 3s ease-in-out infinite;
+      margin-right: 0.3em;
+    }
+
+    @keyframes fadeInWord {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideWord {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
     .animated-cta {
       animation: fadeInUp 1s ease-out both;
       opacity: 0;
@@ -1005,8 +1044,9 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 
     .feature-card:hover {
       transform: translateY(-8px) scale(1.01);
-      box-shadow: 0 22px 60px rgba(2, 6, 23, 0.12);
+      box-shadow: 0 22px 60px rgba(249, 115, 22, 0.25), 0 0 0 1px rgba(249, 115, 22, 0.3);
       border-color: #F97316;
+      background: linear-gradient(135deg, #fefefe 0%, #f1f5f9 100%);
     }
 
     .feature-card.animate {
@@ -1020,10 +1060,10 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, transparent 50%);
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0.02) 50%, transparent 100%);
       border-radius: 14px;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.4s ease;
       pointer-events: none;
     }
 
@@ -1258,6 +1298,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       opacity: 0;
       transform: translateY(20px);
       animation: fadeInUp 0.6s ease forwards;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     }
 
     @keyframes fadeInUp {
@@ -1268,7 +1309,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     }
 
     .footer-container {
-      max-width: 1200px;
+      max-width: 80%;
       margin: 0 auto;
       padding: 50px 20px 30px;
       display: grid;
@@ -1345,24 +1386,34 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
 
     .social-links {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 25px;
+      gap: 15px;
+      margin-top: 15px;
     }
 
     .social-link {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
       color: #cbd5e1;
       text-decoration: none;
       transition: all 0.3s ease;
-      font-size: 0.9rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .social-link:hover {
       color: #f97316;
-      transform: translateX(5px);
+      background: rgba(249, 115, 22, 0.1);
+      border-color: #f97316;
+      transform: translateY(-2px);
+    }
+
+    .social-link svg {
+      width: 20px;
+      height: 20px;
     }
 
     .newsletter {
@@ -1559,8 +1610,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   redirectToKeycloakRegistration(): void {
-    // TODO: Implement Keycloak registration redirect
-    this.router.navigate(['/register']);
+    const isProduction = window.location.protocol === 'https:';
+    const issuer = isProduction
+      ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI'
+      : 'http://localhost:8080/realms/Maintenance-DGSI';
+    const clientId = 'maintenance-app';
+    const redirectUri = encodeURIComponent(window.location.origin + '/login');
+    const registrationUrl = `${issuer}/protocol/openid-connect/registrations?client_id=${clientId}&redirect_uri=${redirectUri}`;
+    window.location.href = registrationUrl;
   }
 
   ngOnInit(): void {

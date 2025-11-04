@@ -22,8 +22,12 @@ public interface OrdreCommandeRepository extends JpaRepository<OrdreCommande, Lo
     List<OrdreCommande> findByPrestataireItem(String prestataire);
 
     // Chargement eager des prestations et items
-    @Query("SELECT DISTINCT oc FROM OrdreCommande oc LEFT JOIN FETCH oc.prestations LEFT JOIN FETCH oc.items WHERE oc.id = :id")
+    @Query("SELECT oc FROM OrdreCommande oc LEFT JOIN FETCH oc.prestations LEFT JOIN FETCH oc.items WHERE oc.id = :id")
     java.util.Optional<OrdreCommande> findByIdWithPrestations(@Param("id") Long id);
+
+    // Chargement eager des items
+    @Query("SELECT oc FROM OrdreCommande oc LEFT JOIN FETCH oc.items WHERE oc.id = :id")
+    java.util.Optional<OrdreCommande> findByIdWithItems(@Param("id") Long id);
 
     @Query("SELECT DISTINCT oc FROM OrdreCommande oc LEFT JOIN FETCH oc.prestations")
     List<OrdreCommande> findAllWithPrestations();

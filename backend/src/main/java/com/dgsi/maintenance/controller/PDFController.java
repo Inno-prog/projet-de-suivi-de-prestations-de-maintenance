@@ -42,22 +42,33 @@ public class PDFController {
     public ResponseEntity<byte[]> genererOrdreCommande() {
         try {
             // Récupérer tous les items avec OC1 > 0
-            List<TypeItem> items = typeItemRepository.findAll().stream()
+            List<TypeItem> allItems = typeItemRepository.findAll();
+            System.out.println("Total items found: " + allItems.size());
+
+            List<TypeItem> items = allItems.stream()
                     .filter(item -> item.getOc1Quantity() != null && item.getOc1Quantity() > 0)
                     .toList();
 
+            System.out.println("Items with OC1 > 0: " + items.size());
+            items.forEach(item -> System.out.println("Item: " + item.getPrestation() + ", OC1: " + item.getOc1Quantity()));
+
             if (items.isEmpty()) {
+                System.out.println("No items with OC1 quantity found");
                 return ResponseEntity.badRequest().body("Aucun item avec quantité OC1 trouvée".getBytes());
             }
 
             // Générer le trimestre actuel
             int mois = LocalDate.now().getMonthValue();
             String trimestre = "T" + ((mois - 1) / 3 + 1) + "-" + LocalDate.now().getYear();
+            System.out.println("Generated trimestre: " + trimestre);
 
             // Générer le PDF
+            System.out.println("Calling PDF generation service...");
             byte[] pdfContent = pdfGenerationService.genererOrdreCommandeFromItems(items, trimestre);
+            System.out.println("PDF generation completed. Content length: " + (pdfContent != null ? pdfContent.length : "null"));
 
             if (pdfContent == null || pdfContent.length == 0) {
+                System.out.println("PDF content is null or empty");
                 return ResponseEntity.internalServerError().body("Erreur lors de la génération du PDF".getBytes());
             }
 
@@ -71,8 +82,9 @@ public class PDFController {
                     .body(pdfContent);
 
         } catch (Exception e) {
+            System.err.println("Error generating ordre commande PDF: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().body(("Erreur lors de la génération du PDF: " + e.getMessage()).getBytes());
         }
     }
 

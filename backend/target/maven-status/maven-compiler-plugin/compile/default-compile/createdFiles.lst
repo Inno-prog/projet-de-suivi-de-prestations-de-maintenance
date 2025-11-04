@@ -1,6 +1,5 @@
 com/dgsi/maintenance/service/PDFGenerationService.class
 com/dgsi/maintenance/dto/LoginRequest.class
-com/dgsi/maintenance/service/PDFGenerationService$ColorConstants.class
 com/dgsi/maintenance/entity/Item.class
 com/dgsi/maintenance/repository/FichePrestationRepository.class
 com/dgsi/maintenance/controller/EvaluationFileController.class

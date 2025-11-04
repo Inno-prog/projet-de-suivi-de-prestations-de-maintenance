@@ -8,256 +8,286 @@ import com.dgsi.maintenance.entity.EvaluationTrimestrielle;
 import com.dgsi.maintenance.entity.OrdreCommande;
 import com.dgsi.maintenance.entity.Prestation;
 import com.dgsi.maintenance.entity.TypeItem;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PDFGenerationService {
 
-    // Color constants for iText 5
-    private static final BaseColor BLUE = new BaseColor(0, 102, 204);
-    private static final BaseColor WHITE = BaseColor.WHITE;
-    private static final BaseColor BLACK = BaseColor.BLACK;
-    private static final BaseColor LIGHT_GRAY = BaseColor.LIGHT_GRAY;
+    // Color constants for iText 7
+    private static final DeviceRgb BLUE = new DeviceRgb(0, 102, 204);
+    private static final DeviceRgb WHITE = new DeviceRgb(255, 255, 255);
+    private static final DeviceRgb BLACK = new DeviceRgb(0, 0, 0);
+    private static final DeviceRgb LIGHT_GRAY = new DeviceRgb(211, 211, 211);
 
-    public byte[] genererOrdreCommande(List<OrdreCommande> ordres, String trimestre) throws DocumentException {
+    public byte[] genererOrdreCommande(List<OrdreCommande> ordres, String trimestre) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4.rotate());
-        PdfWriter.getInstance(document, outputStream);
-        document.open();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc, com.itextpdf.kernel.geom.PageSize.A4.rotate());
 
         // Title
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
-        Paragraph title = new Paragraph("ORDRE DE COMMANDE TRIMESTRIEL", titleFont);
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingAfter(20);
+        Paragraph title = new Paragraph("ORDRE DE COMMANDE TRIMESTRIEL")
+                .setFontSize(16)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20);
         document.add(title);
 
         // Header information
-        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        headerInfo.setSpacingAfter(20);
+        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(headerInfo);
 
         // Create order table
-        PdfPTable orderTable = new PdfPTable(new float[]{0.5f, 3f, 1f, 1f, 1f, 1f, 1.5f, 1f});
-        orderTable.setWidthPercentage(100);
+        Table orderTable = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 1f, 1f, 1f, 1f, 1.5f, 1f}));
+        orderTable.setWidth(UnitValue.createPercentValue(100));
 
         // Table headers
-        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
-        addCellToTable(orderTable, "N°", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Prestations", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Min", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Max", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "PU", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "OC1", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Montant OC1", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Ecart", tableHeaderFont, BLUE);
+        addCellToTable(orderTable, "N°", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Prestations", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Min", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Max", BLUE, WHITE, true);
+        addCellToTable(orderTable, "PU", BLUE, WHITE, true);
+        addCellToTable(orderTable, "OC1", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Montant OC1", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Ecart", BLUE, WHITE, true);
 
         // Add order rows
         int rowNum = 1;
         double totalMontant = 0;
         for (OrdreCommande ordre : ordres) {
-            BaseColor rowColor = rowNum % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
-            addCellToTable(orderTable, ordre.getNumeroCommande(), normalFont, rowColor);
-            addCellToTable(orderTable, ordre.getNomItem(), normalFont, rowColor);
-            addCellToTable(orderTable, String.valueOf(ordre.getMinArticles()), normalFont, rowColor);
-            addCellToTable(orderTable, String.valueOf(ordre.getMaxArticles()), normalFont, rowColor);
-            addCellToTable(orderTable, "-", normalFont, rowColor); // PU not available
-            addCellToTable(orderTable, String.valueOf(ordre.getNombreArticlesUtilise()), normalFont, rowColor);
-            addCellToTable(orderTable, String.format("%.2f", ordre.getMontant()), normalFont, rowColor);
-            addCellToTable(orderTable, String.valueOf(ordre.getEcartArticles()), normalFont, rowColor);
+            DeviceRgb rowColor = rowNum % 2 == 0 ? WHITE : new DeviceRgb(245, 245, 245);
+            addCellToTable(orderTable, ordre.getNumeroCommande(), rowColor, BLACK, false);
+            addCellToTable(orderTable, ordre.getNomItem(), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.valueOf(ordre.getMinArticles()), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.valueOf(ordre.getMaxArticles()), rowColor, BLACK, false);
+            addCellToTable(orderTable, "-", rowColor, BLACK, false); // PU not available
+            addCellToTable(orderTable, String.valueOf(ordre.getNombreArticlesUtilise()), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.format("%.2f", ordre.getMontant()), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.valueOf(ordre.getEcartArticles()), rowColor, BLACK, false);
             totalMontant += ordre.getMontant();
             rowNum++;
         }
 
         // Summary row
-        Font boldFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.BLACK);
-        addCellToTable(orderTable, "TOTAL GENERAL", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, String.format("%.2f", totalMontant), boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
+        addCellToTable(orderTable, "TOTAL GENERAL", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, String.format("%.2f", totalMontant), LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
 
         document.add(orderTable);
 
         // Footer
-        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        footer.setAlignment(Element.ALIGN_CENTER);
+        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setTextAlignment(TextAlignment.CENTER);
         document.add(footer);
 
         document.close();
         return outputStream.toByteArray();
     }
 
-    public byte[] genererOrdreCommandeFromItems(List<TypeItem> items, String trimestre) throws DocumentException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4.rotate());
-        PdfWriter.getInstance(document, outputStream);
-        document.open();
+    public byte[] genererOrdreCommandeFromItems(List<TypeItem> items, String trimestre) throws Exception {
+        System.out.println("Starting PDF generation for ordre commande with " + items.size() + " items");
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            System.out.println("Created ByteArrayOutputStream");
+            PdfWriter writer = new PdfWriter(outputStream);
+            System.out.println("Created PdfWriter");
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            System.out.println("Created PdfDocument");
+            Document document = new Document(pdfDoc, PageSize.A4.rotate());
+            System.out.println("PDF document opened");
 
         // Title
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
-        Paragraph title = new Paragraph("ORDRE DE COMMANDE TRIMESTRIEL", titleFont);
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingAfter(20);
+        Paragraph title = new Paragraph("ORDRE DE COMMANDE TRIMESTRIEL")
+                .setFontSize(16)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20);
         document.add(title);
+        System.out.println("Title added");
 
         // Header information
-        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        headerInfo.setSpacingAfter(20);
+        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(headerInfo);
+        System.out.println("Header info added");
 
         // Create order table
-        PdfPTable orderTable = new PdfPTable(new float[]{0.5f, 3f, 1f, 1f, 1f, 1f, 1.5f, 1f});
-        orderTable.setWidthPercentage(100);
+        Table orderTable = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 1f, 1f, 1f, 1f, 1.5f, 1f}));
+        orderTable.setWidth(UnitValue.createPercentValue(100));
 
         // Table headers
-        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, WHITE);
-        addCellToTable(orderTable, "N°", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Prestations", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Min", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Max", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "PU", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "OC1", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Montant OC1", tableHeaderFont, BLUE);
-        addCellToTable(orderTable, "Ecart", tableHeaderFont, BLUE);
+        addCellToTable(orderTable, "N°", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Prestations", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Min", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Max", BLUE, WHITE, true);
+        addCellToTable(orderTable, "PU", BLUE, WHITE, true);
+        addCellToTable(orderTable, "OC1", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Montant OC1", BLUE, WHITE, true);
+        addCellToTable(orderTable, "Ecart", BLUE, WHITE, true);
 
         // Add order rows
         int rowNum = 1;
         double totalMontant = 0;
+        System.out.println("Processing " + items.size() + " items for table rows");
         for (TypeItem item : items) {
-            BaseColor rowColor = rowNum % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
-            addCellToTable(orderTable, item.getNumero(), normalFont, rowColor);
-            addCellToTable(orderTable, item.getPrestation(), normalFont, rowColor);
-            addCellToTable(orderTable, String.valueOf(item.getMinArticles()), normalFont, rowColor);
-            addCellToTable(orderTable, String.valueOf(item.getMaxArticles()), normalFont, rowColor);
-            addCellToTable(orderTable, String.valueOf(item.getPrixUnitaire()), normalFont, rowColor);
-            addCellToTable(orderTable, String.valueOf(item.getOc1Quantity()), normalFont, rowColor);
+            System.out.println("Processing item: " + item.getPrestation() + ", OC1: " + item.getOc1Quantity());
+            DeviceRgb rowColor = rowNum % 2 == 0 ? WHITE : new DeviceRgb(245, 245, 245);
+            addCellToTable(orderTable, item.getNumero(), rowColor, BLACK, false);
+            addCellToTable(orderTable, item.getPrestation(), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.valueOf(item.getMinArticles()), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.valueOf(item.getMaxArticles()), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.valueOf(item.getPrixUnitaire()), rowColor, BLACK, false);
+            addCellToTable(orderTable, String.valueOf(item.getOc1Quantity()), rowColor, BLACK, false);
             double montant = item.getPrixUnitaire() * item.getOc1Quantity();
-            addCellToTable(orderTable, String.format("%.2f", montant), normalFont, rowColor);
+            addCellToTable(orderTable, String.format("%.2f", montant), rowColor, BLACK, false);
             int ecart = item.getOc1Quantity() - item.getMaxArticles();
-            addCellToTable(orderTable, String.valueOf(ecart), normalFont, rowColor);
+            addCellToTable(orderTable, String.valueOf(ecart), rowColor, BLACK, false);
             totalMontant += montant;
             rowNum++;
         }
+        System.out.println("Total montant calculated: " + totalMontant);
 
         // Summary row
-        Font boldFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BLACK);
-        addCellToTable(orderTable, "TOTAL GENERAL", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, String.format("%.2f", totalMontant), boldFont, LIGHT_GRAY);
-        addCellToTable(orderTable, "", boldFont, LIGHT_GRAY);
+        addCellToTable(orderTable, "TOTAL GENERAL", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, String.format("%.2f", totalMontant), LIGHT_GRAY, BLACK, true);
+        addCellToTable(orderTable, "", LIGHT_GRAY, BLACK, true);
 
         document.add(orderTable);
+        System.out.println("Table added to document");
 
         // Footer
-        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        footer.setAlignment(Element.ALIGN_CENTER);
+        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setTextAlignment(TextAlignment.CENTER);
         document.add(footer);
+        System.out.println("Footer added");
 
-        document.close();
-        return outputStream.toByteArray();
+            document.close();
+            System.out.println("Document closed. Final output stream size: " + outputStream.size());
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            System.err.println("Error in genererOrdreCommandeFromItems: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
-    public byte[] genererEvaluationTrimestrielle(EvaluationTrimestrielle evaluation) throws DocumentException {
+    public byte[] genererEvaluationTrimestrielle(EvaluationTrimestrielle evaluation) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-        PdfWriter.getInstance(document, outputStream);
-
-        document.open();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc, PageSize.A4);
 
         // Fonts
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
-        Font headerFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, BaseColor.BLACK);
-        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLUE);
-        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
-        Font smallFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.GRAY);
+        PdfFont titleFont = PdfFontFactory.createFont();
+        PdfFont headerFont = PdfFontFactory.createFont();
+        PdfFont sectionFont = PdfFontFactory.createFont();
+        PdfFont normalFont = PdfFontFactory.createFont();
+        PdfFont tableHeaderFont = PdfFontFactory.createFont();
+        PdfFont smallFont = PdfFontFactory.createFont();
 
         // Title
-        Paragraph title = new Paragraph("RAPPORT DU " + getTrimestreText(evaluation.getTrimestre()) + " DE LA MAINTENANCE", titleFont);
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingAfter(20);
+        Paragraph title = new Paragraph("RAPPORT DU " + getTrimestreText(evaluation.getTrimestre()) + " DE LA MAINTENANCE")
+                .setFontSize(16)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20);
         document.add(title);
 
         // Header information
-        PdfPTable headerTable = new PdfPTable(2);
-        headerTable.setWidthPercentage(100);
-        headerTable.setWidths(new float[]{1, 2});
+        Table headerTable = new Table(UnitValue.createPercentArray(new float[]{1, 2}));
+        headerTable.setWidth(UnitValue.createPercentValue(100));
 
-        addCellToTable(headerTable, "Lot :", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(headerTable, evaluation.getLot(), normalFont, BaseColor.WHITE);
+        addCellToTable(headerTable, "Lot :", LIGHT_GRAY, BLACK, false);
+        addCellToTable(headerTable, evaluation.getLot(), WHITE, BLACK, false);
 
-        addCellToTable(headerTable, "Période :", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(headerTable, getPeriodeText(evaluation.getTrimestre()), normalFont, BaseColor.WHITE);
+        addCellToTable(headerTable, "Période :", LIGHT_GRAY, BLACK, false);
+        addCellToTable(headerTable, getPeriodeText(evaluation.getTrimestre()), WHITE, BLACK, false);
 
-        addCellToTable(headerTable, "Prestataire :", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(headerTable, evaluation.getPrestataireNom(), normalFont, BaseColor.WHITE);
+        addCellToTable(headerTable, "Prestataire :", LIGHT_GRAY, BLACK, false);
+        addCellToTable(headerTable, evaluation.getPrestataireNom(), WHITE, BLACK, false);
 
-        addCellToTable(headerTable, "Date évaluation :", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(headerTable, evaluation.getDateEvaluation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont, BaseColor.WHITE);
+        addCellToTable(headerTable, "Date évaluation :", LIGHT_GRAY, BLACK, false);
+        addCellToTable(headerTable, evaluation.getDateEvaluation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), WHITE, BLACK, false);
 
-        headerTable.setSpacingAfter(20);
         document.add(headerTable);
 
         // I. INTRODUCTION
-        Paragraph introTitle = new Paragraph("I. INTRODUCTION", sectionFont);
-        introTitle.setSpacingAfter(10);
+        Paragraph introTitle = new Paragraph("I. INTRODUCTION")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(introTitle);
 
         Paragraph introText = new Paragraph(
             "Le Ministère de l'Économie et des Finances (MEF) signe annuellement des contrats " +
             "de maintenance informatique avec des prestataires privés. " +
             "Une évaluation trimestrielle est réalisée pour vérifier si les prestations attendues " +
-            "sont respectées conformément aux contrats.", normalFont);
-        introText.setSpacingAfter(20);
+            "sont respectées conformément aux contrats.")
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(introText);
 
         // II. ALLOTISSEMENT
-        Paragraph allotTitle = new Paragraph("II. ALLOTISSEMENT", sectionFont);
-        allotTitle.setSpacingAfter(10);
+        Paragraph allotTitle = new Paragraph("II. ALLOTISSEMENT")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(allotTitle);
 
         Paragraph allotText = new Paragraph(
             "Lot " + evaluation.getLot().replace("Lot ", "") + " : Maintenance du matériel informatique et support bureautique " +
             "des bâtiments R+5, R+4, R+1 du MEF.\n" +
-            "Direction concernée : BCMP", normalFont);
-        allotText.setSpacingAfter(20);
+            "Direction concernée : BCMP")
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(allotText);
 
         // III. EXIGENCES À SATISFAIRE
-        Paragraph exigencesTitle = new Paragraph("III. EXIGENCES À SATISFAIRE", sectionFont);
-        exigencesTitle.setSpacingAfter(10);
+        Paragraph exigencesTitle = new Paragraph("III. EXIGENCES À SATISFAIRE")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(exigencesTitle);
 
         // Create requirements table
-        PdfPTable exigencesTable = new PdfPTable(4);
-        exigencesTable.setWidthPercentage(100);
-        exigencesTable.setWidths(new float[]{0.5f, 3f, 1.5f, 2f});
+        Table exigencesTable = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 1.5f, 2f}));
+        exigencesTable.setWidth(UnitValue.createPercentValue(100));
 
         // Table headers
-        addCellToTable(exigencesTable, "N°", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(exigencesTable, "Exigences du DAO", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(exigencesTable, "Prestataire", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(exigencesTable, "Observations", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(exigencesTable, "N°", BLUE, WHITE, true);
+        addCellToTable(exigencesTable, "Exigences du DAO", BLUE, WHITE, true);
+        addCellToTable(exigencesTable, "Prestataire", BLUE, WHITE, true);
+        addCellToTable(exigencesTable, "Observations", BLUE, WHITE, true);
 
         // Add criteria rows
         String[][] criteres = {
@@ -296,107 +326,127 @@ public class PDFGenerationService {
 
         for (int i = 0; i < criteres.length; i++) {
             String[] critere = criteres[i];
-            BaseColor rowColor = i % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
-            addCellToTable(exigencesTable, critere[0], normalFont, rowColor);
-            addCellToTable(exigencesTable, critere[1], normalFont, rowColor);
-            addCellToTable(exigencesTable, critere[2], normalFont, rowColor);
-            addCellToTable(exigencesTable, critere[3], normalFont, rowColor);
+            DeviceRgb rowColor = i % 2 == 0 ? WHITE : new DeviceRgb(245, 245, 245);
+            addCellToTable(exigencesTable, critere[0], rowColor, BLACK, false);
+            addCellToTable(exigencesTable, critere[1], rowColor, BLACK, false);
+            addCellToTable(exigencesTable, critere[2], rowColor, BLACK, false);
+            addCellToTable(exigencesTable, critere[3], rowColor, BLACK, false);
         }
 
-        exigencesTable.setSpacingAfter(20);
         document.add(exigencesTable);
 
         // IV. INSTANCES NON RÉSOLUES
-        Paragraph instancesTitle = new Paragraph("IV. INSTANCES NON RÉSOLUES", sectionFont);
-        instancesTitle.setSpacingAfter(10);
+        Paragraph instancesTitle = new Paragraph("IV. INSTANCES NON RÉSOLUES")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(instancesTitle);
 
-        PdfPTable instancesTable = new PdfPTable(4);
-        instancesTable.setWidthPercentage(100);
-        instancesTable.setWidths(new float[]{0.5f, 2f, 1.5f, 1f});
+        Table instancesTable = new Table(UnitValue.createPercentArray(new float[]{0.5f, 2f, 1.5f, 1f}));
 
-        addCellToTable(instancesTable, "N°", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(instancesTable, "Instance", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(instancesTable, "Direction", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(instancesTable, "Date début", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(instancesTable, "Jours pénalité", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(instancesTable, "Observation", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(instancesTable, "N°", BLUE, WHITE, true);
+        addCellToTable(instancesTable, "Instance", BLUE, WHITE, true);
+        addCellToTable(instancesTable, "Direction", BLUE, WHITE, true);
+        addCellToTable(instancesTable, "Date début", BLUE, WHITE, true);
+        addCellToTable(instancesTable, "Jours pénalité", BLUE, WHITE, true);
+        addCellToTable(instancesTable, "Observation", BLUE, WHITE, true);
 
         if (evaluation.getInstancesNonResolues() != null && !evaluation.getInstancesNonResolues().trim().isEmpty()) {
-            addCellToTable(instancesTable, "1", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, evaluation.getInstancesNonResolues(), normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, "BCMP", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, evaluation.getDateEvaluation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, evaluation.getPenalitesCalcul() != null ? evaluation.getPenalitesCalcul().toString() : "0", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, "Instance en cours de résolution", normalFont, BaseColor.WHITE);
+            addCellToTable(instancesTable, "1", WHITE, BLACK, false);
+            addCellToTable(instancesTable, evaluation.getInstancesNonResolues(), WHITE, BLACK, false);
+            addCellToTable(instancesTable, "BCMP", WHITE, BLACK, false);
+            addCellToTable(instancesTable, evaluation.getDateEvaluation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), WHITE, BLACK, false);
+            addCellToTable(instancesTable, evaluation.getPenalitesCalcul() != null ? evaluation.getPenalitesCalcul().toString() : "0", WHITE, BLACK, false);
+            addCellToTable(instancesTable, "Instance en cours de résolution", WHITE, BLACK, false);
         } else {
-            addCellToTable(instancesTable, "1", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, "RAS", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, "-", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, "-", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, "-", normalFont, BaseColor.WHITE);
-            addCellToTable(instancesTable, "-", normalFont, BaseColor.WHITE);
+            addCellToTable(instancesTable, "1", WHITE, BLACK, false);
+            addCellToTable(instancesTable, "RAS", WHITE, BLACK, false);
+            addCellToTable(instancesTable, "-", WHITE, BLACK, false);
+            addCellToTable(instancesTable, "-", WHITE, BLACK, false);
+            addCellToTable(instancesTable, "-", WHITE, BLACK, false);
+            addCellToTable(instancesTable, "-", WHITE, BLACK, false);
         }
 
-        instancesTable.setSpacingAfter(20);
         document.add(instancesTable);
 
         // V. APPRÉCIATIONS
-        Paragraph appreciationsTitle = new Paragraph("V. APPRÉCIATIONS", sectionFont);
-        appreciationsTitle.setSpacingAfter(10);
+        Paragraph appreciationsTitle = new Paragraph("V. APPRÉCIATIONS")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(appreciationsTitle);
 
         if (evaluation.getObservationsGenerales() != null && !evaluation.getObservationsGenerales().trim().isEmpty()) {
-            Paragraph obsTitle = new Paragraph("Observations générales :", headerFont);
+            Paragraph obsTitle = new Paragraph("Observations générales :")
+                    .setFontSize(14)
+                    .setBold();
             document.add(obsTitle);
-            Paragraph obsText = new Paragraph(evaluation.getObservationsGenerales(), normalFont);
-            obsText.setSpacingAfter(10);
+            Paragraph obsText = new Paragraph(evaluation.getObservationsGenerales())
+                    .setFontSize(10)
+                    .setMarginBottom(10);
             document.add(obsText);
         }
 
         if (evaluation.getAppreciationRepresentant() != null && !evaluation.getAppreciationRepresentant().trim().isEmpty()) {
-            Paragraph appTitle = new Paragraph("Appréciation du représentant :", headerFont);
+            Paragraph appTitle = new Paragraph("Appréciation du représentant :")
+                    .setFontSize(14)
+                    .setBold();
             document.add(appTitle);
-            Paragraph appText = new Paragraph(evaluation.getAppreciationRepresentant(), normalFont);
-            appText.setSpacingAfter(10);
+            Paragraph appText = new Paragraph(evaluation.getAppreciationRepresentant())
+                    .setFontSize(10)
+                    .setMarginBottom(10);
             document.add(appText);
         }
 
         // Score and recommendation
         int score = calculerScore(evaluation);
-        Paragraph scoreText = new Paragraph("Note finale : " + score + "/8", headerFont);
+        Paragraph scoreText = new Paragraph("Note finale : " + score + "/8")
+                .setFontSize(14)
+                .setBold();
         document.add(scoreText);
 
-        Paragraph recoText = new Paragraph("Recommandation : " + getRecommandationText(score), headerFont);
-        recoText.setSpacingAfter(20);
+        Paragraph recoText = new Paragraph("Recommandation : " + getRecommandationText(score))
+                .setFontSize(14)
+                .setBold()
+                .setMarginBottom(20);
         document.add(recoText);
 
         // Signatures
-        Paragraph signaturesTitle = new Paragraph("Signatures :", headerFont);
+        Paragraph signaturesTitle = new Paragraph("Signatures :")
+                .setFontSize(14)
+                .setBold();
         document.add(signaturesTitle);
 
-        PdfPTable signaturesTable = new PdfPTable(1);
-        signaturesTable.setWidthPercentage(60);
-        signaturesTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+        Table signaturesTable = new Table(1);
+        signaturesTable.setWidth(UnitValue.createPercentValue(60));
 
-        addCellToTable(signaturesTable, "DGSI : " + (evaluation.getEvaluateurNom() != null ? evaluation.getEvaluateurNom() : "Non spécifié"), normalFont, BaseColor.WHITE);
-        addCellToTable(signaturesTable, "Correspondant Informatique : " + (evaluation.getCorrespondantId() != null ? "Correspondant " + evaluation.getCorrespondantId() : "Non spécifié"), normalFont, BaseColor.WHITE);
-        addCellToTable(signaturesTable, "Prestataire : " + evaluation.getPrestataireNom(), normalFont, BaseColor.WHITE);
+        addCellToTable(signaturesTable, "DGSI : " + (evaluation.getEvaluateurNom() != null ? evaluation.getEvaluateurNom() : "Non spécifié"), WHITE, BLACK, false);
+        addCellToTable(signaturesTable, "Correspondant Informatique : " + (evaluation.getCorrespondantId() != null ? "Correspondant " + evaluation.getCorrespondantId() : "Non spécifié"), WHITE, BLACK, false);
+        addCellToTable(signaturesTable, "Prestataire : " + evaluation.getPrestataireNom(), WHITE, BLACK, false);
 
-        signaturesTable.setSpacingAfter(20);
         document.add(signaturesTable);
 
         // Footer
-        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), smallFont);
-        footer.setAlignment(Element.ALIGN_CENTER);
+        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(8)
+                .setTextAlignment(TextAlignment.CENTER);
         document.add(footer);
 
         document.close();
         return outputStream.toByteArray();
     }
 
-    private void addCellToTable(PdfPTable table, String text, Font font, BaseColor backgroundColor) {
-        PdfPCell cell = new PdfPCell(new Paragraph(text, font));
+    private void addCellToTable(Table table, String text, DeviceRgb backgroundColor, DeviceRgb textColor, boolean bold) {
+        Cell cell = new Cell();
+        Paragraph paragraph = new Paragraph(text)
+                .setFontColor(textColor)
+                .setFontSize(10);
+        if (bold) {
+            paragraph.setBold();
+        }
+        cell.add(paragraph);
         cell.setBackgroundColor(backgroundColor);
         cell.setPadding(5);
         table.addCell(cell);
@@ -454,137 +504,136 @@ public class PDFGenerationService {
         return "DÉCLASSER LE PRESTATAIRE";
     }
 
-    public byte[] genererRapportTrimestriel(List<EvaluationTrimestrielle> evaluations, String trimestre) throws DocumentException {
+    public byte[] genererRapportTrimestriel(List<EvaluationTrimestrielle> evaluations, String trimestre) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-        PdfWriter.getInstance(document, outputStream);
-
-        document.open();
-
-        // Fonts
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
-        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLUE);
-        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc, PageSize.A4);
 
         // Title
-        Paragraph title = new Paragraph("RAPPORT TRIMESTRIEL DE SUIVI DE MAINTENANCE", titleFont);
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingAfter(20);
+        Paragraph title = new Paragraph("RAPPORT TRIMESTRIEL DE SUIVI DE MAINTENANCE")
+                .setFontSize(18)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20);
         document.add(title);
 
         // Header information
-        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        headerInfo.setSpacingAfter(20);
+        Paragraph headerInfo = new Paragraph("Trimestre: " + trimestre + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(headerInfo);
 
         // Summary statistics
-        Paragraph summaryTitle = new Paragraph("RÉSUMÉ STATISTIQUE", sectionFont);
-        summaryTitle.setSpacingAfter(10);
+        Paragraph summaryTitle = new Paragraph("RÉSUMÉ STATISTIQUE")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(summaryTitle);
 
-        PdfPTable summaryTable = new PdfPTable(3);
-        summaryTable.setWidthPercentage(100);
-        summaryTable.setWidths(new float[]{2f, 1f, 1f});
+        Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{2f, 1f, 1f}));
+        summaryTable.setWidth(UnitValue.createPercentValue(100));
 
-        addCellToTable(summaryTable, "Indicateur", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(summaryTable, "Nombre", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(summaryTable, "Pourcentage", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(summaryTable, "Indicateur", BLUE, WHITE, true);
+        addCellToTable(summaryTable, "Nombre", BLUE, WHITE, true);
+        addCellToTable(summaryTable, "Pourcentage", BLUE, WHITE, true);
 
         int totalEvaluations = evaluations.size();
         long evaluationsCompletes = evaluations.stream().filter(e -> e.getNoteFinale() != null).count();
         long bonnesEvaluations = evaluations.stream().filter(e -> e.getNoteFinale() != null && e.getNoteFinale().doubleValue() >= 6.0).count();
 
-        addCellToTable(summaryTable, "Évaluations réalisées", normalFont, BaseColor.WHITE);
-        addCellToTable(summaryTable, String.valueOf(evaluationsCompletes), normalFont, BaseColor.WHITE);
-        addCellToTable(summaryTable, String.format("%.1f%%", (double) evaluationsCompletes / totalEvaluations * 100), normalFont, BaseColor.WHITE);
+        addCellToTable(summaryTable, "Évaluations réalisées", WHITE, BLACK, false);
+        addCellToTable(summaryTable, String.valueOf(evaluationsCompletes), WHITE, BLACK, false);
+        addCellToTable(summaryTable, String.format("%.1f%%", (double) evaluationsCompletes / totalEvaluations * 100), WHITE, BLACK, false);
 
-        addCellToTable(summaryTable, "Évaluations satisfaisantes (≥6/8)", normalFont, BaseColor.WHITE);
-        addCellToTable(summaryTable, String.valueOf(bonnesEvaluations), normalFont, BaseColor.WHITE);
-        addCellToTable(summaryTable, String.format("%.1f%%", (double) bonnesEvaluations / totalEvaluations * 100), normalFont, BaseColor.WHITE);
+        addCellToTable(summaryTable, "Évaluations satisfaisantes (≥6/8)", WHITE, BLACK, false);
+        addCellToTable(summaryTable, String.valueOf(bonnesEvaluations), WHITE, BLACK, false);
+        addCellToTable(summaryTable, String.format("%.1f%%", (double) bonnesEvaluations / totalEvaluations * 100), WHITE, BLACK, false);
 
-        summaryTable.setSpacingAfter(20);
         document.add(summaryTable);
+        document.add(new Paragraph("\n"));
 
         // Detailed evaluations table
-        Paragraph detailsTitle = new Paragraph("DÉTAIL DES ÉVALUATIONS", sectionFont);
-        detailsTitle.setSpacingAfter(10);
+        Paragraph detailsTitle = new Paragraph("DÉTAIL DES ÉVALUATIONS")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(detailsTitle);
 
-        PdfPTable detailsTable = new PdfPTable(5);
-        detailsTable.setWidthPercentage(100);
-        detailsTable.setWidths(new float[]{1f, 2f, 1f, 1f, 2f});
+        Table detailsTable = new Table(UnitValue.createPercentArray(new float[]{1f, 2f, 1f, 1f, 2f}));
+        detailsTable.setWidth(UnitValue.createPercentValue(100));
 
-        addCellToTable(detailsTable, "Lot", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(detailsTable, "Prestataire", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(detailsTable, "Note", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(detailsTable, "Recommandation", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(detailsTable, "Observations", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(detailsTable, "Lot", BLUE, WHITE, true);
+        addCellToTable(detailsTable, "Prestataire", BLUE, WHITE, true);
+        addCellToTable(detailsTable, "Note", BLUE, WHITE, true);
+        addCellToTable(detailsTable, "Recommandation", BLUE, WHITE, true);
+        addCellToTable(detailsTable, "Observations", BLUE, WHITE, true);
 
         for (EvaluationTrimestrielle evaluation : evaluations) {
-            BaseColor rowColor = evaluations.indexOf(evaluation) % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
-            addCellToTable(detailsTable, evaluation.getLot(), normalFont, rowColor);
-            addCellToTable(detailsTable, evaluation.getPrestataireNom(), normalFont, rowColor);
-            addCellToTable(detailsTable, evaluation.getNoteFinale() != null ? String.format("%.1f/8", evaluation.getNoteFinale()) : "N/A", normalFont, rowColor);
-            addCellToTable(detailsTable, evaluation.getNoteFinale() != null ? getRecommandationText(Math.round(evaluation.getNoteFinale().floatValue())) : "N/A", normalFont, rowColor);
+            DeviceRgb rowColor = evaluations.indexOf(evaluation) % 2 == 0 ? WHITE : new DeviceRgb(245, 245, 245);
+            addCellToTable(detailsTable, evaluation.getLot(), rowColor, BLACK, false);
+            addCellToTable(detailsTable, evaluation.getPrestataireNom(), rowColor, BLACK, false);
+            addCellToTable(detailsTable, evaluation.getNoteFinale() != null ? String.format("%.1f/8", evaluation.getNoteFinale()) : "N/A", rowColor, BLACK, false);
+            addCellToTable(detailsTable, evaluation.getNoteFinale() != null ? getRecommandationText(Math.round(evaluation.getNoteFinale().floatValue())) : "N/A", rowColor, BLACK, false);
             String obs = evaluation.getObservationsGenerales();
             if (obs != null && obs.length() > 50) {
                 obs = obs.substring(0, 47) + "...";
             }
-            addCellToTable(detailsTable, obs != null ? obs : "Aucune", normalFont, rowColor);
+            addCellToTable(detailsTable, obs != null ? obs : "Aucune", rowColor, BLACK, false);
         }
 
-        detailsTable.setSpacingAfter(20);
         document.add(detailsTable);
+        document.add(new Paragraph("\n"));
 
         // Footer
-        Paragraph footer = new Paragraph("Rapport généré par le système DGSI Maintenance - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        footer.setAlignment(Element.ALIGN_CENTER);
+        Paragraph footer = new Paragraph("Rapport généré par le système DGSI Maintenance - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setTextAlignment(TextAlignment.CENTER);
         document.add(footer);
 
         document.close();
         return outputStream.toByteArray();
     }
 
-    public byte[] genererRapportAnnuel(List<EvaluationTrimestrielle> evaluations, int annee) throws DocumentException {
+    public byte[] genererRapportAnnuel(List<EvaluationTrimestrielle> evaluations, int annee) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-        PdfWriter.getInstance(document, outputStream);
-
-        document.open();
-
-        // Fonts
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
-        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLUE);
-        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc, PageSize.A4);
 
         // Title
-        Paragraph title = new Paragraph("RAPPORT ANNUEL DE MAINTENANCE INFORMATIQUE " + annee, titleFont);
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingAfter(20);
+        Paragraph title = new Paragraph("RAPPORT ANNUEL DE MAINTENANCE INFORMATIQUE " + annee)
+                .setFontSize(18)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20);
         document.add(title);
 
         // Header information
-        Paragraph headerInfo = new Paragraph("Année: " + annee + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        headerInfo.setSpacingAfter(20);
+        Paragraph headerInfo = new Paragraph("Année: " + annee + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(headerInfo);
 
         // Annual statistics by trimestre
-        Paragraph statsTitle = new Paragraph("STATISTIQUES ANNUELLES PAR TRIMESTRE", sectionFont);
-        statsTitle.setSpacingAfter(10);
+        Paragraph statsTitle = new Paragraph("STATISTIQUES ANNUELLES PAR TRIMESTRE")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(statsTitle);
 
-        PdfPTable annualTable = new PdfPTable(6);
-        annualTable.setWidthPercentage(100);
-        annualTable.setWidths(new float[]{1f, 1f, 1f, 1f, 1f, 1f});
+        Table annualTable = new Table(UnitValue.createPercentArray(new float[]{1f, 1f, 1f, 1f, 1f, 1f}));
+        annualTable.setWidth(UnitValue.createPercentValue(100));
 
-        addCellToTable(annualTable, "Trimestre", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(annualTable, "Évaluations", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(annualTable, "Note Moyenne", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(annualTable, "Satisfaisants (≥6)", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(annualTable, "Taux Satisfaction", tableHeaderFont, BaseColor.BLUE);
-        addCellToTable(annualTable, "Recommandation", tableHeaderFont, BaseColor.BLUE);
+        addCellToTable(annualTable, "Trimestre", BLUE, WHITE, true);
+        addCellToTable(annualTable, "Évaluations", BLUE, WHITE, true);
+        addCellToTable(annualTable, "Note Moyenne", BLUE, WHITE, true);
+        addCellToTable(annualTable, "Satisfaisants (≥6)", BLUE, WHITE, true);
+        addCellToTable(annualTable, "Taux Satisfaction", BLUE, WHITE, true);
+        addCellToTable(annualTable, "Recommandation", BLUE, WHITE, true);
 
         String[] trimestres = {"T1", "T2", "T3", "T4"};
         for (String trimestre : trimestres) {
@@ -611,21 +660,24 @@ public class PDFGenerationService {
             else if (avgNote >= 5.0) recommandation = "MOYEN";
             else recommandation = "INSATISFAISANT";
 
-            BaseColor rowColor = trimestres[0].equals(trimestre) ? BaseColor.WHITE : new BaseColor(245, 245, 245);
-            addCellToTable(annualTable, trimestre, normalFont, rowColor);
-            addCellToTable(annualTable, String.valueOf(count), normalFont, rowColor);
-            addCellToTable(annualTable, String.format("%.1f", avgNote), normalFont, rowColor);
-            addCellToTable(annualTable, String.valueOf(satisfaisants), normalFont, rowColor);
-            addCellToTable(annualTable, String.format("%.1f%%", tauxSatisfaction), normalFont, rowColor);
-            addCellToTable(annualTable, recommandation, normalFont, rowColor);
+            DeviceRgb rowColor = trimestres[0].equals(trimestre) ? WHITE : new DeviceRgb(245, 245, 245);
+            addCellToTable(annualTable, trimestre, rowColor, BLACK, false);
+            addCellToTable(annualTable, String.valueOf(count), rowColor, BLACK, false);
+            addCellToTable(annualTable, String.format("%.1f", avgNote), rowColor, BLACK, false);
+            addCellToTable(annualTable, String.valueOf(satisfaisants), rowColor, BLACK, false);
+            addCellToTable(annualTable, String.format("%.1f%%", tauxSatisfaction), rowColor, BLACK, false);
+            addCellToTable(annualTable, recommandation, rowColor, BLACK, false);
         }
 
-        annualTable.setSpacingAfter(20);
         document.add(annualTable);
+        document.add(new Paragraph("\n"));
 
         // Global statistics
-        Paragraph globalTitle = new Paragraph("BILAN ANNUEL GLOBAL", sectionFont);
-        globalTitle.setSpacingAfter(10);
+        Paragraph globalTitle = new Paragraph("BILAN ANNUEL GLOBAL")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(globalTitle);
 
         double globalAvg = evaluations.stream()
@@ -643,144 +695,149 @@ public class PDFGenerationService {
         Paragraph bilan = new Paragraph(
             "Note moyenne annuelle: " + String.format("%.1f/8", globalAvg) + "\n" +
             "Taux de satisfaction global: " + String.format("%.1f%%", globalTaux) + "\n" +
-            "Nombre total d'évaluations: " + evaluations.size(), normalFont);
-        bilan.setSpacingAfter(20);
+            "Nombre total d'évaluations: " + evaluations.size())
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(bilan);
 
         // Footer
-        Paragraph footer = new Paragraph("Rapport annuel généré par le système DGSI Maintenance - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        footer.setAlignment(Element.ALIGN_CENTER);
+        Paragraph footer = new Paragraph("Rapport annuel généré par le système DGSI Maintenance - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setTextAlignment(TextAlignment.CENTER);
         document.add(footer);
 
         document.close();
         return outputStream.toByteArray();
     }
 
-    public byte[] genererOrdreCommandeDetail(OrdreCommande ordre) throws DocumentException {
+    public byte[] genererOrdreCommandeDetail(OrdreCommande ordre) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-        PdfWriter.getInstance(document, outputStream);
-
-        document.open();
-
-        // Fonts
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
-        Font headerFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, BaseColor.BLACK);
-        Font sectionFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.BLUE);
-        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-        Font tableHeaderFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
-        Font smallFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.GRAY);
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc, PageSize.A4);
 
         // Title
-        Paragraph title = new Paragraph("DÉTAILS DE L'ORDRE DE COMMANDE", titleFont);
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingAfter(20);
+        Paragraph title = new Paragraph("DÉTAILS DE L'ORDRE DE COMMANDE")
+                .setFontSize(16)
+                .setBold()
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(20);
         document.add(title);
 
         // Header information
         String numeroOc = ordre.getNumeroOc() != null ? ordre.getNumeroOc().toString() : ordre.getIdOC();
-        Paragraph headerInfo = new Paragraph("Numéro OC: " + numeroOc + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), normalFont);
-        headerInfo.setSpacingAfter(20);
+        Paragraph headerInfo = new Paragraph("Numéro OC: " + numeroOc + " | Date de génération: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(10)
+                .setMarginBottom(20);
         document.add(headerInfo);
 
         // Informations générales
-        Paragraph generalTitle = new Paragraph("I. INFORMATIONS GÉNÉRALES", sectionFont);
-        generalTitle.setSpacingAfter(10);
+        Paragraph generalTitle = new Paragraph("I. INFORMATIONS GÉNÉRALES")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(generalTitle);
 
-        PdfPTable generalTable = new PdfPTable(2);
-        generalTable.setWidthPercentage(100);
-        generalTable.setWidths(new float[]{1, 2});
+        Table generalTable = new Table(new float[]{1, 2});
+        generalTable.setWidth(UnitValue.createPercentValue(100));
 
-        addCellToTable(generalTable, "Numéro OC:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(generalTable, numeroOc, normalFont, BaseColor.WHITE);
+        addCellToTable(generalTable, "Numéro OC:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(generalTable, numeroOc, WHITE, BLACK, false);
 
-        addCellToTable(generalTable, "Item:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(generalTable, ordre.getNomItem() != null ? ordre.getNomItem() : "-", normalFont, BaseColor.WHITE);
+        addCellToTable(generalTable, "Item:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(generalTable, ordre.getNomItem() != null ? ordre.getNomItem() : "-", WHITE, BLACK, false);
 
-        addCellToTable(generalTable, "Prestataire:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(generalTable, ordre.getPrestataireItem() != null ? ordre.getPrestataireItem() : "-", normalFont, BaseColor.WHITE);
+        addCellToTable(generalTable, "Prestataire:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(generalTable, ordre.getPrestataireItem() != null ? ordre.getPrestataireItem() : "-", WHITE, BLACK, false);
 
-        addCellToTable(generalTable, "Statut:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(generalTable, ordre.getStatut() != null ? ordre.getStatut().toString() : "-", normalFont, BaseColor.WHITE);
+        addCellToTable(generalTable, "Statut:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(generalTable, ordre.getStatut() != null ? ordre.getStatut().toString() : "-", WHITE, BLACK, false);
 
-        addCellToTable(generalTable, "Observations:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(generalTable, ordre.getObservations() != null ? ordre.getObservations() : "-", normalFont, BaseColor.WHITE);
+        addCellToTable(generalTable, "Observations:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(generalTable, ordre.getObservations() != null ? ordre.getObservations() : "-", WHITE, BLACK, false);
 
-        generalTable.setSpacingAfter(20);
         document.add(generalTable);
+        document.add(new Paragraph("\n"));
+
+        // Calculate values before using them
+        int ecartItem = ordre.calculer_ecart_item();
+        Float penalite = ordre.calcul_penalite();
 
         // Quantités & Prix
-        Paragraph quantitesTitle = new Paragraph("II. QUANTITÉS & PRIX", sectionFont);
-        quantitesTitle.setSpacingAfter(10);
+        Paragraph quantitesTitle = new Paragraph("II. QUANTITÉS & PRIX")
+                .setFontSize(12)
+                .setBold()
+                .setFontColor(BLUE)
+                .setMarginBottom(10);
         document.add(quantitesTitle);
 
-        PdfPTable quantitesTable = new PdfPTable(2);
-        quantitesTable.setWidthPercentage(100);
-        quantitesTable.setWidths(new float[]{1, 2});
+        Table quantitesTable = new Table(UnitValue.createPercentArray(new float[]{1, 2}));
+        quantitesTable.setWidth(UnitValue.createPercentValue(100));
 
-        addCellToTable(quantitesTable, "Min prestations:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(quantitesTable, String.valueOf(ordre.getMin_prestations() != null ? ordre.getMin_prestations() : 0), normalFont, BaseColor.WHITE);
+        addCellToTable(quantitesTable, "Min prestations:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(quantitesTable, String.valueOf(ordre.getMin_prestations() != null ? ordre.getMin_prestations() : 0), WHITE, BLACK, false);
 
-        addCellToTable(quantitesTable, "Max prestations:", normalFont, BaseColor.LIGHT_GRAY);
-        int maxPrestations = ordre.getItems() != null && !ordre.getItems().isEmpty() ?
-            ordre.getItems().stream().mapToInt(item -> item.getQuantiteMaxTrimestre() != null ? item.getQuantiteMaxTrimestre() : 0).max().orElse(0) :
-            (ordre.getMax_prestations() != null ? ordre.getMax_prestations() : 0);
-        addCellToTable(quantitesTable, String.valueOf(maxPrestations), normalFont, BaseColor.WHITE);
+        addCellToTable(quantitesTable, "Max prestations:", LIGHT_GRAY, BLACK, false);
+        int maxPrestations = ordre.getMax_prestations() != null ? ordre.getMax_prestations() : 0;
+        addCellToTable(quantitesTable, String.valueOf(maxPrestations), WHITE, BLACK, false);
 
-        addCellToTable(quantitesTable, "Prestations réalisées:", normalFont, BaseColor.LIGHT_GRAY);
+        addCellToTable(quantitesTable, "Prestations réalisées:", LIGHT_GRAY, BLACK, false);
         int prestationsRealisees = ordre.getPrestations() != null ? ordre.getPrestations().size() : 0;
-        addCellToTable(quantitesTable, String.valueOf(prestationsRealisees), normalFont, BaseColor.WHITE);
+        addCellToTable(quantitesTable, String.valueOf(prestationsRealisees), WHITE, BLACK, false);
 
-        addCellToTable(quantitesTable, "Prix unitaire:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(quantitesTable, String.format("%.2f FCFA", ordre.getPrixUnitPrest() != null ? ordre.getPrixUnitPrest() : 0.0f), normalFont, BaseColor.WHITE);
+        addCellToTable(quantitesTable, "Prix unitaire:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(quantitesTable, String.format("%.2f FCFA", ordre.getPrixUnitPrest() != null ? ordre.getPrixUnitPrest() : 0.0f), WHITE, BLACK, false);
 
-        addCellToTable(quantitesTable, "Montant total:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(quantitesTable, String.format("%.2f FCFA", ordre.getMontant() != null ? ordre.getMontant() : 0.0), normalFont, BaseColor.WHITE);
+        addCellToTable(quantitesTable, "Montant total:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(quantitesTable, String.format("%.2f FCFA", ordre.getMontant() != null ? ordre.getMontant() : 0.0), WHITE, BLACK, false);
 
-        addCellToTable(quantitesTable, "Écart:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(quantitesTable, String.valueOf(ordre.calculer_ecart_item()), normalFont, BaseColor.WHITE);
+        addCellToTable(quantitesTable, "Écart:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(quantitesTable, String.valueOf(ecartItem), WHITE, BLACK, false);
 
-        addCellToTable(quantitesTable, "Pénalités:", normalFont, BaseColor.LIGHT_GRAY);
-        addCellToTable(quantitesTable, String.format("%.2f FCFA", ordre.calcul_penalite()), normalFont, BaseColor.WHITE);
+        addCellToTable(quantitesTable, "Pénalités:", LIGHT_GRAY, BLACK, false);
+        addCellToTable(quantitesTable, String.format("%.2f FCFA", penalite), WHITE, BLACK, false);
 
-        quantitesTable.setSpacingAfter(20);
         document.add(quantitesTable);
+        document.add(new Paragraph("\n"));
 
         // Prestations associées
         if (ordre.getPrestations() != null && !ordre.getPrestations().isEmpty()) {
-            Paragraph prestationsTitle = new Paragraph("III. PRESTATIONS ASSOCIÉES", sectionFont);
-            prestationsTitle.setSpacingAfter(10);
+            Paragraph prestationsTitle = new Paragraph("III. PRESTATIONS ASSOCIÉES")
+                    .setFontSize(12)
+                    .setBold()
+                    .setFontColor(BLUE)
+                    .setMarginBottom(10);
             document.add(prestationsTitle);
 
-            PdfPTable prestationsTable = new PdfPTable(5);
-            prestationsTable.setWidthPercentage(100);
-            prestationsTable.setWidths(new float[]{0.5f, 2f, 1.5f, 1f, 1f});
+            Table prestationsTable = new Table(UnitValue.createPercentArray(new float[]{0.5f, 2f, 1.5f, 1f, 1f}));
+            prestationsTable.setWidth(UnitValue.createPercentValue(100));
 
-            addCellToTable(prestationsTable, "N°", tableHeaderFont, BaseColor.BLUE);
-            addCellToTable(prestationsTable, "Prestation", tableHeaderFont, BaseColor.BLUE);
-            addCellToTable(prestationsTable, "Prestataire", tableHeaderFont, BaseColor.BLUE);
-            addCellToTable(prestationsTable, "Montant", tableHeaderFont, BaseColor.BLUE);
-            addCellToTable(prestationsTable, "Statut", tableHeaderFont, BaseColor.BLUE);
+            addCellToTable(prestationsTable, "N°", BLUE, WHITE, true);
+            addCellToTable(prestationsTable, "Prestation", BLUE, WHITE, true);
+            addCellToTable(prestationsTable, "Prestataire", BLUE, WHITE, true);
+            addCellToTable(prestationsTable, "Montant", BLUE, WHITE, true);
+            addCellToTable(prestationsTable, "Statut", BLUE, WHITE, true);
 
             int num = 1;
             for (Prestation prestation : ordre.getPrestations()) {
-                BaseColor rowColor = num % 2 == 0 ? BaseColor.WHITE : new BaseColor(245, 245, 245);
-                addCellToTable(prestationsTable, String.valueOf(num), normalFont, rowColor);
-                addCellToTable(prestationsTable, prestation.getNomPrestation() != null ? prestation.getNomPrestation() : "-", normalFont, rowColor);
-                addCellToTable(prestationsTable, prestation.getNomPrestataire() != null ? prestation.getNomPrestataire() : "-", normalFont, rowColor);
-                addCellToTable(prestationsTable, String.format("%.2f FCFA", prestation.getMontantPrest() != null ? prestation.getMontantPrest().doubleValue() : 0.0), normalFont, rowColor);
-                addCellToTable(prestationsTable, prestation.getStatut() != null ? prestation.getStatut() : "-", normalFont, rowColor);
+                DeviceRgb rowColor = num % 2 == 0 ? WHITE : new DeviceRgb(245, 245, 245);
+                addCellToTable(prestationsTable, String.valueOf(num), rowColor, BLACK, false);
+                addCellToTable(prestationsTable, prestation.getNomPrestation() != null ? prestation.getNomPrestation() : "-", rowColor, BLACK, false);
+                addCellToTable(prestationsTable, prestation.getNomPrestataire() != null ? prestation.getNomPrestataire() : "-", rowColor, BLACK, false);
+                addCellToTable(prestationsTable, String.format("%.2f FCFA", prestation.getMontantPrest() != null ? prestation.getMontantPrest().doubleValue() : 0.0), rowColor, BLACK, false);
+                addCellToTable(prestationsTable, prestation.getStatut() != null ? prestation.getStatut() : "-", rowColor, BLACK, false);
                 num++;
             }
 
-            prestationsTable.setSpacingAfter(20);
             document.add(prestationsTable);
+            document.add(new Paragraph("\n"));
         }
 
         // Footer
-        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), smallFont);
-        footer.setAlignment(Element.ALIGN_CENTER);
+        Paragraph footer = new Paragraph("Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .setFontSize(8)
+                .setTextAlignment(TextAlignment.CENTER);
         document.add(footer);
 
         document.close();

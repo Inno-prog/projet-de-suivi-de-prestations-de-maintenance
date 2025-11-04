@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -361,7 +361,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     }
   `]
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
   loading = false;
   errorMessage = '';
@@ -384,6 +384,11 @@ export class RegisterComponent {
       adresse: [''],
       qualification: ['']
     });
+  }
+
+  ngOnInit(): void {
+    // Redirect to Keycloak registration page
+    window.location.href = 'http://localhost:8080/realms/Maintenance-DGSI/account';
   }
 
   togglePasswordVisibility(): void {

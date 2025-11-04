@@ -1,14 +1,12 @@
-# PDF Export Fix - Update to iText 7
+# TODO: Reorganize Sidebar Navigation
 
 ## Tasks
-- [x] Update pom.xml to use iText 7 dependency
-- [ ] Rewrite PDFGenerationService.java to use iText 7 API
-  - [x] Update imports
-- [x] Rewrite genererOrdreCommande method
-- [x] Rewrite genererOrdreCommandeFromItems method
-  - [ ] Rewrite genererEvaluationTrimestrielle method
-  - [ ] Rewrite genererRapportTrimestriel method
-  - [ ] Rewrite genererRapportAnnuel method
-  - [ ] Rewrite genererOrdreCommandeDetail method
-  - [ ] Update helper methods (addCellToTable, etc.)
-- [ ] Test compilation
+- [x] Add collapsible functionality to Administration section
+- [x] Add collapsible functionality to Rapports section
+- [x] Move "Tableau de Bord Équipements" from Équipements to Administration sub-items
+- [x] Move "Statistiques" from separate section to Rapports sub-items
+- [x] Remove separate Équipements section
+- [x] Remove separate Statistiques section
+- [x] Update template with section headers and arrows
+- [x] Add CSS styles for collapsible behavior
+- [x] Add component properties and methods for toggling sections
