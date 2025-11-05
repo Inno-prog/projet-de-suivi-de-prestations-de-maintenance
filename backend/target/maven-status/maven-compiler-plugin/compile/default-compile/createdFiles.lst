@@ -9,6 +9,7 @@ com/dgsi/maintenance/service/UserService.class
 com/dgsi/maintenance/entity/FichePrestation.class
 com/dgsi/maintenance/MaintenanceApplication.class
 com/dgsi/maintenance/entity/StatutContrat.class
+com/dgsi/maintenance/service/StructureMefpService.class
 com/dgsi/maintenance/entity/TypeItem.class
 com/dgsi/maintenance/entity/User.class
 com/dgsi/maintenance/security/WebSecurityConfig.class
@@ -37,6 +38,8 @@ com/dgsi/maintenance/entity/EvaluationTrimestrielle.class
 com/dgsi/maintenance/entity/Trimestre.class
 com/dgsi/maintenance/controller/PrestationController$ErrorResponse.class
 com/dgsi/maintenance/controller/PrestationController.class
+com/dgsi/maintenance/controller/StructureMefpController.class
+com/dgsi/maintenance/repository/StructureMefpRepository.class
 com/dgsi/maintenance/controller/TestController.class
 com/dgsi/maintenance/controller/ContratController.class
 com/dgsi/maintenance/controller/FichePrestationController.class
@@ -68,6 +71,7 @@ com/dgsi/maintenance/service/PrestationLimitExceededException.class
 com/dgsi/maintenance/controller/AuthController$UserInfo.class
 com/dgsi/maintenance/service/FileUploadService.class
 com/dgsi/maintenance/service/EvaluationService.class
+com/dgsi/maintenance/entity/StructureMefp.class
 com/dgsi/maintenance/repository/OrdreCommandeRepository.class
 com/dgsi/maintenance/repository/TypeItemRepository.class
 com/dgsi/maintenance/config/ContratDataInitializer.class

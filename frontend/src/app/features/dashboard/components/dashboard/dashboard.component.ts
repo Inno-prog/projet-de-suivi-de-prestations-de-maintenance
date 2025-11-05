@@ -1621,8 +1621,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    console.log('DashboardComponent: Initializing dashboard');
+    console.log('DashboardComponent: Current user:', this.authService.getCurrentUser());
+    console.log('DashboardComponent: Is authenticated:', this.authService.isAuthenticated());
+
     // Si l'utilisateur est déjà présent et est administrateur, charger les statistiques immédiatement
     if (this.authService.isAdmin()) {
+      console.log('DashboardComponent: User is admin, loading stats');
       this.loadStats();
       this.startAutoRefresh();
     }
@@ -1631,7 +1636,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // disponible (après le rappel OAuth), déclencher le chargement des statistiques. Cela gère
     // les cas de synchronisation où le tableau de bord s'initialise avant la fin du flux d'authentification.
     this.userSub = this.authService.currentUser$.subscribe(user => {
+      console.log('DashboardComponent: User subscription triggered', user);
       if (user && this.authService.isAdmin()) {
+        console.log('DashboardComponent: User authenticated as admin, loading stats');
         this.loadStats();
         this.startAutoRefresh();
       }

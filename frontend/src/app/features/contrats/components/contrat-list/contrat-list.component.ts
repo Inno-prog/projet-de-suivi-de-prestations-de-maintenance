@@ -29,6 +29,22 @@ import { UserService } from '../../../../core/services/user.service';
             
 
             <div class="form-group">
+              <label for="idContrat">Numéro de Contrat</label>
+              <input
+                type="text"
+                id="idContrat"
+                formControlName="idContrat"
+                placeholder="Ex: CT-001-2025"
+                class="line-input"
+                [class.error]="contratForm.get('idContrat')?.invalid && contratForm.get('idContrat')?.touched"
+              />
+              <div class="input-line" [class.error]="contratForm.get('idContrat')?.invalid && contratForm.get('idContrat')?.touched"></div>
+              <div class="error-message" *ngIf="contratForm.get('idContrat')?.invalid && contratForm.get('idContrat')?.touched">
+                Le numéro de contrat est requis
+              </div>
+            </div>
+
+            <div class="form-group">
               <label for="nomPrestataire">Prestataire</label>
               <select
                 id="nomPrestataire"
@@ -76,7 +92,7 @@ import { UserService } from '../../../../core/services/user.service';
             </div>
 
             <div class="form-group">
-              <label for="montant">Montant (FCFA)</label>
+              <label for="montant">Montant du budget (FCFA)</label>
               <input
                 type="number"
                 id="montant"
@@ -148,7 +164,7 @@ import { UserService } from '../../../../core/services/user.service';
               <tbody>
                 <tr *ngFor="let contrat of filteredContrats">
                   <td>{{ contrat.idContrat }}</td>
-                  <td>{{ contrat.nomPrestataire }}</td>
+                  <td><i class="icon-user">👤</i> {{ contrat.nomPrestataire }}</td>
                   <td>{{ formatDate(contrat.dateDebut) }}</td>
                   <td>{{ formatDate(contrat.dateFin) }}</td>
                   <td>{{ (contrat.montant || 0) | number:'1.0-0' }} FCFA</td>
@@ -161,19 +177,11 @@ import { UserService } from '../../../../core/services/user.service';
                     </span>
                   </td>
                   <td>
-                    <button class="edit-btn" (click)="editContrat(contrat)" *ngIf="authService.isAdmin()">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                    <button class="edit-btn" (click)="editContrat(contrat)" *ngIf="authService.isAdmin()" title="Modifier">
+                      <i class="icon-edit">✏️</i>
                     </button>
-                    <button class="delete-btn" (click)="deleteContrat(contrat)" *ngIf="authService.isAdmin()">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M10 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                    <button class="delete-btn" (click)="deleteContrat(contrat)" *ngIf="authService.isAdmin()" title="Supprimer">
+                      <i class="icon-delete">🗑️</i>
                     </button>
                   </td>
                 </tr>
@@ -210,7 +218,7 @@ import { UserService } from '../../../../core/services/user.service';
     .page-header h1 {
       font-size: 24px;
       font-weight: 600;
-      color: #333;
+      color: #1E2761;
       margin: 0;
     }
 
@@ -393,13 +401,15 @@ import { UserService } from '../../../../core/services/user.service';
     th {
       background-color: #f9fafb;
       font-weight: 600;
-      color: #374151;
+      color: #1E2761;
       font-size: 0.875rem;
     }
 
     td {
-      color: #6b7280;
+      color: #000000;
       font-size: 0.875rem;
+      font-weight: 600;
+      border-bottom: 2px solid #e5e7eb;
     }
 
     .table-header {
@@ -411,9 +421,10 @@ import { UserService } from '../../../../core/services/user.service';
 
     .table-header h2 {
       margin: 0;
-      color: #111827;
-      font-size: 1.25rem;
-      font-weight: 600;
+      color: #1E2761;
+      font-size: 1.125rem;
+      font-weight: 500;
+      letter-spacing: 0.025em;
     }
 
     .search-bar {
@@ -444,12 +455,33 @@ import { UserService } from '../../../../core/services/user.service';
 
     .edit-btn, .delete-btn {
       background: none;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
       padding: 0.5rem;
-      color: #6b7280;
       margin-right: 0.5rem;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .edit-btn {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .edit-btn:hover {
+      background: #bfdbfe;
+      transform: scale(1.1);
+    }
+
+    .delete-btn {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .delete-btn:hover {
+      background: #fecaca;
+      transform: scale(1.1);
     }
 
     .badge {
@@ -540,6 +572,7 @@ export class ContratListComponent implements OnInit {
     private userService: UserService
   ) {
     this.contratForm = this.formBuilder.group({
+      idContrat: ['', Validators.required],
       nomPrestataire: ['', Validators.required],
       dateDebut: ['', Validators.required],
       dateFin: ['', Validators.required],
@@ -645,6 +678,7 @@ export class ContratListComponent implements OnInit {
     this.showCreateForm = true;
     
     this.contratForm.patchValue({
+      idContrat: contrat.idContrat,
       nomPrestataire: contrat.nomPrestataire,
       dateDebut: contrat.dateDebut,
       dateFin: contrat.dateFin,

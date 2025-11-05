@@ -250,3 +250,15 @@ export enum StatutRapport {
   APPROUVE = 'APPROUVE',
   REJETE = 'REJETE'
 }
+
+export interface StructureMefp {
+  id?: string;
+  nom: string;
+  contact?: string;
+  email?: string;
+  ville?: string;
+  description?: string;
+  categorie?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

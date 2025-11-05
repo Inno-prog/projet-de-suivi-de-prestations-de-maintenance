@@ -3,12 +3,19 @@ import { inject } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const oauthService = inject(OAuthService);
 
   // Skip adding Authorization header for OAuth2 endpoints
   if (req.url.includes('/oauth2/') || req.url.includes('keycloak')) {
+    return next(req);
+  }
+
+  // In development with mock auth, don't add any authorization headers
+  if (!environment.production && environment.useMockAuth) {
+    console.debug('authInterceptor: mock auth mode, skipping Authorization header', { url: req.url });
     return next(req);
   }
 

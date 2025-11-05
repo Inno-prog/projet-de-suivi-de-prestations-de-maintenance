@@ -6,6 +6,7 @@ export interface User {
   adresse?: string;
   role: string;
   qualification?: string;
+  structure?: string; // For AGENT_DGSI (structures du MEFP)
   createdAt?: string;
   updatedAt?: string;
 }

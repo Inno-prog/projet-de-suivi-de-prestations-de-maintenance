@@ -10,6 +10,10 @@ import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { environment } from './environments/environment';
+
+// Set global flag for mock auth mode
+(window as any).useMockAuth = !environment.production && (environment as any).useMockAuth;
 
 bootstrapApplication(AppComponent, {
   providers: [

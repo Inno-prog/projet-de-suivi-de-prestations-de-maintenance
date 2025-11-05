@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ConfirmationService } from '../../../core/services/confirmation.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ToastComponent } from '../toast/toast.component';
 import { ConfirmationComponent } from '../confirmation/confirmation.component';
@@ -424,13 +425,20 @@ export class LayoutComponent {
   profileLoading = false;
   profileForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private confirmationService: ConfirmationService) {
     this.currentUser = this.authService.getCurrentUser();
     this.profileForm = this.fb.group({
       nom: [this.currentUser?.nom || ''],
       email: [this.currentUser?.email || ''],
       contact: [''],
       adresse: ['']
+    });
+
+    // Initialize confirmation service
+    setTimeout(() => {
+      if (this.confirmation) {
+        this.confirmationService.setComponent(this.confirmation);
+      }
     });
   }
 
@@ -464,6 +472,7 @@ export class LayoutComponent {
   }
 
   logout() {
+    console.log('LayoutComponent: Bouton de déconnexion cliqué');
     this.authService.logout();
   }
 

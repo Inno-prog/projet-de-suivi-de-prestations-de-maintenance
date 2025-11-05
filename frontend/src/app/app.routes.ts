@@ -66,6 +66,12 @@ export const routes: Routes = [
     data: { role: 'ADMINISTRATEUR' }
   },
   {
+    path: 'structures-mefp',
+    loadComponent: () => import('./features/structures-mefp/components/structures-mefp-list/structures-mefp-list.component').then(m => m.StructuresMefpListComponent),
+    canActivate: [AuthGuard],
+    data: { role: 'ADMINISTRATEUR' }
+  },
+  {
     path: 'contrats',
     loadComponent: () => import('./features/contrats/components/contrat-list/contrat-list.component').then(m => m.ContratListComponent),
     canActivate: [AuthGuard]

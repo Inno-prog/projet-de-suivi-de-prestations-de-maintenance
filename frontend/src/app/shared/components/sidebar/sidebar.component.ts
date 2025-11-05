@@ -56,6 +56,7 @@ import { AuthService } from '../../../core/services/auth.service';
           </div>
           <div class="sub-nav" [class.expanded]="sections['admin']">
             <a routerLink="/users" routerLinkActive="active" class="nav-item">👥 Utilisateurs</a>
+            <a routerLink="/structures-mefp" routerLinkActive="active" class="nav-item">🏢 Structures du MEFP</a>
             <a routerLink="/prestations" routerLinkActive="active" class="nav-item">🧾 Gestion des prestations</a>
             <a routerLink="/contrats" routerLinkActive="active" class="nav-item">📄 Contrats</a>
             <a routerLink="/items" routerLinkActive="active" class="nav-item">🧰 Items</a>

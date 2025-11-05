@@ -19,6 +19,7 @@
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/OrdreCommandeController.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/PDFController.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/PrestationController.java
+/home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/StructureMefpController.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/TestController.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/TypeItemController.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/controller/UserController.java
@@ -40,6 +41,7 @@
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/StatutCommande.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/StatutContrat.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/StatutFiche.java
+/home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/StructureMefp.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/Trimestre.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/TypeItem.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/entity/User.java
@@ -52,6 +54,7 @@
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/OrdreCommandeRepository.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/PrestataireRepository.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/PrestationRepository.java
+/home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/StructureMefpRepository.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/TypeItemRepository.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/repository/UserRepository.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/security/AuthEntryPointJwt.java
@@ -68,4 +71,5 @@
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/PDFGenerationService.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/PrestationLimitExceededException.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/PrestationService.java
+/home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/StructureMefpService.java
 /home/inno/projet-de-maintenance-informatique-DGSI/backend/src/main/java/com/dgsi/maintenance/service/UserService.java

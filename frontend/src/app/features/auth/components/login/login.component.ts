@@ -338,12 +338,13 @@ export class LoginComponent implements OnInit {
       return;
     }
     // Écouter les changements d'état d'authentification
-    this.authService.currentUser$.subscribe(user => {
-      if (user) {
-        console.log('Utilisateur connecté, redirection...');
-        this.redirectToDashboard();
-      }
-    });
+    // REMOVED: Auto-redirect on user change to prevent unwanted reconnections
+    // this.authService.currentUser$.subscribe(user => {
+    //   if (user) {
+    //     console.log('Utilisateur connecté, redirection...');
+    //     this.redirectToDashboard();
+    //   }
+    // });
   }
 
   retryCallback(): void {

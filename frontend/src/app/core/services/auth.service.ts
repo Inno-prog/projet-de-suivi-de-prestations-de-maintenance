@@ -14,6 +14,7 @@ export class AuthService {
   private API_URL = `${environment.apiUrl}/auth`;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private confirmationService?: any;
 
   constructor(
     private http: HttpClient,
@@ -40,9 +41,9 @@ export class AuthService {
       skipIssuerCheck: !isProduction, // Vérification stricte de l'émetteur en production
       strictDiscoveryDocumentValidation: isProduction, // Validation stricte en production
   oidc: true,
-  // Activer silent refresh afin de tenter un rafraîchissement silencieux des tokens
-  useSilentRefresh: true,
-  silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
+  // Désactiver silent refresh pour éviter la déconnexion automatique
+  useSilentRefresh: false,
+  // silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
       disableAtHashCheck: false, // Activer la vérification de hachage pour la sécurité
       loginUrl: isProduction
         ? 'https://your-keycloak-domain.com/realms/Maintenance-DGSI/protocol/openid-connect/auth'
@@ -82,6 +83,31 @@ export class AuthService {
     console.log('Initialisation du service OAuth...');
     console.log('URL de l\'émetteur:', 'http://localhost:8080/realms/Maintenance-DGSI');
     console.log('ID client:', 'maintenance-app');
+    console.log('Environnement production:', environment.production);
+    console.log('devAuthBypass activé:', (environment as any).devAuthBypass);
+    console.log('useMockAuth activé:', (environment as any).useMockAuth);
+
+    // Si le mode mock auth est activé, utiliser directement les tokens factices
+    if (!environment.production && (environment as any).useMockAuth) {
+      console.log('Mode mock auth activé - utilisation de tokens factices');
+      this.createFakeTokensWhenDev();
+      this.updateUserFromToken();
+      return;
+    }
+
+    // Vérifier la connectivité réseau vers Keycloak
+    this.checkKeycloakConnectivity().then(isReachable => {
+      console.log('Keycloak reachable:', isReachable);
+      if (!isReachable) {
+        console.warn('Keycloak n\'est pas accessible sur http://localhost:8080');
+        if (!environment.production && (environment as any).devAuthBypass) {
+          console.warn('Activation du mode devAuthBypass');
+          this.createFakeTokensWhenDev();
+          this.updateUserFromToken();
+          return;
+        }
+      }
+    });
 
     // Effacer les tokens invalides des sessions précédentes sans déclencher une redirection de déconnexion
     if (!this.oauthService.hasValidAccessToken() && (localStorage.getItem('access_token') || localStorage.getItem('id_token'))) {
@@ -99,6 +125,14 @@ export class AuthService {
       this.currentUserSubject.next(null);
     }
 
+    // Vérifier si nous venons de nous déconnecter (éviter la reconnexion automatique)
+    const justLoggedOut = sessionStorage.getItem('justLoggedOut') === 'true';
+    if (justLoggedOut) {
+      console.log('Détection de déconnexion récente - pas de reconnexion automatique');
+      sessionStorage.removeItem('justLoggedOut');
+      return;
+    }
+
     // Charger le document de découverte et essayer de se connecter s'il y a des tokens
     console.log('Chargement du document de découverte...');
 
@@ -106,43 +140,8 @@ export class AuthService {
 
     discoveryPromise.then(() => {
       console.log('Document de découverte chargé avec succès');
-      // Hook: when discovery is loaded, setup automatic token refresh handling
-      try {
-        // certains événements peuvent être écoutés via oauthService.events
-        (this.oauthService as any).events?.subscribe((e: any) => {
-          // e.name peut être 'token_expires' ou 'session_terminated' selon la version
-          if (e && e.type === 'session_terminated') {
-            console.warn('Session terminée détectée par oauthService event');
-            this.logout();
-          }
-          if (e && e.type === 'token_expires') {
-            console.log('Token expirant détecté — tentative de silent refresh');
-            // tenter un silent refresh (retourne une promesse)
-            try {
-              this.oauthService.silentRefresh().then(() => {
-                console.log('Silent refresh réussi');
-                this.updateUserFromToken();
-              }).catch((srErr: any) => {
-                console.warn('Échec du silent refresh:', srErr);
-                // si refresh_token présent, essayer refresh via token endpoint
-                const refresh = localStorage.getItem('refresh_token');
-                if (refresh) {
-                  console.log('Tentative de refresh via refresh_token');
-                  // oauthService peut exposer refreshToken (selon version)
-                  (this.oauthService as any).refreshToken ?
-                    (this.oauthService as any).refreshToken().catch(() => this.logout()) : this.logout();
-                } else {
-                  this.logout();
-                }
-              });
-            } catch (e) {
-              console.warn('silentRefresh not available in this OAuthService version:', e);
-            }
-          }
-        });
-      } catch (e) {
-        // ignore if events not available
-      }
+      // Désactiver les événements automatiques de refresh pour éviter la déconnexion automatique
+      // Les utilisateurs devront se déconnecter manuellement via le bouton de déconnexion
       if (this.oauthService.hasValidAccessToken()) {
         console.log('Token d\'accès valide trouvé, mise à jour de l\'utilisateur depuis le token');
         this.updateUserFromToken();
@@ -186,11 +185,11 @@ export class AuthService {
     const now = Math.floor(Date.now() / 1000);
     const payload = {
       iss: 'http://localhost:8080/realms/Maintenance-DGSI',
-      sub: 'dev-user',
-      preferred_username: 'dev.user',
-      name: 'Développeur Local',
-      email: 'dev.user@example.com',
-      realm_access: { roles: ['ADMINISTRATEUR'] },
+      sub: '',
+      preferred_username: '',
+      name: '',
+      email: '',
+      realm_access: { roles: ['ADMINISTRATEUR'] }, // Utilise un rôle existant dans Keycloak
       iat: now,
       exp: now + 60 * 60 * 24 // valable 24h
     };
@@ -306,14 +305,19 @@ export class AuthService {
   }
 
   logout(): void {
-    // Effacer les tokens OAuth et la session
-    try {
-      this.oauthService.logOut();
-    } catch (error) {
-      console.warn('Échec de la déconnexion OAuth, continuation avec le nettoyage local:', error);
-    }
+    console.log('Début de la procédure de déconnexion');
+    console.log('État avant déconnexion:', {
+      isAuthenticated: this.isAuthenticated(),
+      hasValidToken: this.oauthService.hasValidAccessToken(),
+      currentUser: this.getCurrentUser()
+    });
 
-    // Effacer tout le stockage local
+    // Marquer la session comme déconnectée pour éviter la reconnexion automatique
+    sessionStorage.setItem('justLoggedOut', 'true');
+    console.log('Marquage de session de déconnexion défini');
+
+    // Effacer immédiatement les données utilisateur et stockage local
+    console.log('Nettoyage immédiat du stockage local');
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('access_token');
@@ -322,8 +326,28 @@ export class AuthService {
 
     // Effacer l'utilisateur actuel
     this.currentUserSubject.next(null);
+    console.log('Utilisateur actuel effacé');
+    console.log('État après nettoyage local:', {
+      isAuthenticated: this.isAuthenticated(),
+      hasValidToken: this.oauthService.hasValidAccessToken(),
+      currentUser: this.getCurrentUser()
+    });
 
-    // Forcer la navigation vers la page d'accueil au lieu de Keycloak
+    // Nettoyer OAuth sans redirection Keycloak (évite les erreurs de paramètres manquants)
+    try {
+      console.log('Nettoyage manuel des tokens OAuth');
+      // Ne pas appeler oauthService.logOut() car cela cause des erreurs Keycloak
+      // au lieu de cela, nettoyer manuellement les tokens via les méthodes appropriées
+      (this.oauthService as any).accessToken = null;
+      (this.oauthService as any).idToken = null;
+      (this.oauthService as any).refreshToken = null;
+      console.log('Nettoyage OAuth terminé avec succès');
+    } catch (error) {
+      console.warn('Erreur lors du nettoyage OAuth:', error);
+    }
+
+    // Forcer la navigation vers la page d'accueil (dashboard principal)
+    console.log('Redirection vers la page d\'accueil');
     window.location.href = '/';
   }
 
@@ -480,6 +504,22 @@ export class AuthService {
     this.oauthService.tryLoginCodeFlow();
   }
 
+  setConfirmationComponent(component: any): void {
+    this.confirmationService = component;
+  }
+
+  private async checkKeycloakConnectivity(): Promise<boolean> {
+    try {
+      const response = await fetch('http://localhost:8080/realms/Maintenance-DGSI/.well-known/openid_connect_configuration', {
+        method: 'GET',
+        mode: 'no-cors' // Avoid CORS issues during connectivity check
+      });
+      return true; // If we get here, it's reachable
+    } catch (error) {
+      console.warn('Keycloak connectivity check failed:', error);
+      return false;
+    }
+  }
   handleOAuthCallback(): Promise<boolean> {
     if (this.oauthService.hasValidAccessToken()) {
       this.updateUserFromToken();

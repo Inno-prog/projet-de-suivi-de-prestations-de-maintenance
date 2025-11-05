@@ -19,38 +19,8 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
   template: `
     <div class="container">
         <!-- Header Section -->
-        <div class="prestation-header">
-          <div class="header-content">
-            <h1>Gestion des Prestations</h1>
-            <p>Surveillez et gérez l'exécution des prestations de maintenance</p>
-          </div>
-          <div class="header-actions">
-            <div class="search-box">
-              <input
-                type="text"
-                placeholder="Rechercher par prestataire ou prestation..."
-                [(ngModel)]="searchTerm"
-                (input)="onSearch()"
-                class="search-input">
-              <span class="search-icon">🔍</span>
-            </div>
-            <select
-              [(ngModel)]="selectedStatut"
-              (change)="onFilterChange()"
-              class="filter-select">
-              <option value="">Tous les statuts</option>
-              <option value="terminé">Terminé</option>
-              <option value="en cours">En cours</option>
-              <option value="en attente">En attente</option>
-            </select>
 
-            <button class="btn btn-primary" (click)="refreshData()">
-              <span>🔄</span>
-              Actualiser
-            </button>
-          </div>
-        </div>
-
+         
 
         <!-- Statistics Cards -->
         <div class="stats-grid">
@@ -197,28 +167,7 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
       width: 100%;
     }
 
-    .prestation-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding: 1.5rem;
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      border-radius: 12px;
-      color: white;
-    }
-
-    .header-content h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .header-content p {
-      font-size: 1.1rem;
-      opacity: 0.9;
-      margin: 0;
-    }
+    /* Removed prestation header styles */
 
     .header-actions {
       display: flex;

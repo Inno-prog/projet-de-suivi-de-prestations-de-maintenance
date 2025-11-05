@@ -44,30 +44,22 @@ import { ToastService } from '../../../../core/services/toast.service';
               </thead>
               <tbody>
                 <tr *ngFor="let user of filteredUsers">
-                  <td>{{ user.nom }}</td>
+                  <td><i class="icon-user">👤</i> {{ user.nom }}</td>
                   <td>{{ user.email }}</td>
                   <td>
                     <span class="badge" [class]="getBadgeClass(user.role)">
                       {{ getRoleLabel(user.role) }}
                     </span>
                   </td>
-                  <td>{{ user.contact || '-' }}</td>
+                  <td><i class="icon-phone">📞</i> {{ user.contact || '-' }}</td>
                   <td>{{ user.qualification || '-' }}</td>
                   <td>{{ formatDate(user.createdAt) }}</td>
                   <td>
-                    <button class="edit-btn" (click)="editUser(user)" title="Modifier l'utilisateur">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                    <button class="edit-btn" (click)="editUser(user)" title="Modifier">
+                      <i class="icon-edit">✏️</i>
                     </button>
-                    <button class="delete-btn" (click)="deleteUser(user)" [disabled]="user.id === currentUserId" title="Supprimer l'utilisateur">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M10 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                    <button class="delete-btn" (click)="deleteUser(user)" [disabled]="user.id === currentUserId" title="Supprimer">
+                      <i class="icon-delete">🗑️</i>
                     </button>
                   </td>
                 </tr>
@@ -210,7 +202,7 @@ import { ToastService } from '../../../../core/services/toast.service';
     .page-header h1 {
       font-size: 24px;
       font-weight: 600;
-      color: #333;
+      color: #1E2761;
       margin: 0;
     }
 
@@ -237,37 +229,52 @@ import { ToastService } from '../../../../core/services/toast.service';
     th {
       background-color: #f9fafb;
       font-weight: 600;
-      color: #374151;
+      color: #1E2761;
       font-size: 0.875rem;
     }
 
     td {
-      color: #6b7280;
+      color: #000000;
       font-size: 0.875rem;
+      font-weight: 600;
+      border-bottom: 2px solid #e5e7eb;
     }
 
     .edit-btn, .delete-btn {
       background: none;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
       padding: 0.5rem;
-      color: #6b7280;
       margin-right: 0.5rem;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .edit-btn {
+      background: #dbeafe;
+      color: #1d4ed8;
     }
 
     .edit-btn:hover {
-      background: #f3f4f6;
+      background: #bfdbfe;
+      transform: scale(1.1);
+    }
+
+    .delete-btn {
+      background: #fee2e2;
+      color: #dc2626;
     }
 
     .delete-btn:hover:not(:disabled) {
-      background: #fef2f2;
-      color: #dc2626;
+      background: #fecaca;
+      transform: scale(1.1);
     }
 
     .delete-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      transform: none;
     }
 
     .badge {
@@ -316,7 +323,10 @@ import { ToastService } from '../../../../core/services/toast.service';
 
     .table-header h2 {
       margin: 0;
-      color: #1f2937;
+      color: #1E2761;
+      font-size: 1.125rem;
+      font-weight: 500;
+      letter-spacing: 0.025em;
     }
 
     .search-bar {
@@ -649,6 +659,7 @@ export class UserListComponent implements OnInit {
     const roleLabels: { [key: string]: string } = {
       'ADMINISTRATEUR': 'Administrateur',
       'PRESTATAIRE': 'Prestataire',
+      'AGENT_DGSI': 'Agent DGSI',
       'USER': 'Utilisateur'
     };
     return roleLabels[role] || role;

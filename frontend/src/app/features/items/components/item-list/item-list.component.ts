@@ -110,7 +110,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
               <tbody>
                 <tr *ngFor="let item of filteredItems">
                   <td>{{ item.idItem }}</td>
-                  <td class="prestation-name">{{ formatPrestationName(item.nomItem) }}</td>
+                  <td class="prestation-name"><i class="icon-item">🔧</i> {{ formatPrestationName(item.nomItem) }}</td>
                   <td class="description-cell">{{ formatDescription(item.description) || '-' }}</td>
                   <td>{{ item.prix }} FCFA</td>
                   <td>{{ item.qteEquipDefini }}</td>
@@ -250,10 +250,11 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     }
 
     .header-section h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      color: var(--text-primary);
+      font-size: 1.875rem;
+      font-weight: 500;
+      color: #6b7280;
       margin-bottom: 0.5rem;
+      letter-spacing: 0.025em;
     }
 
     .header-section p {
@@ -281,8 +282,12 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     .items-table td {
       padding: 0.75rem 0.5rem;
       text-align: left;
-      border-bottom: 1px solid #e5e7eb;
       font-size: 0.875rem;
+    }
+
+    .items-table td {
+      color: #000000;
+      font-weight: 600;
     }
 
     .items-table th:nth-child(1),
@@ -324,7 +329,11 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     .items-table th {
       background-color: #f9fafb;
       font-weight: 600;
-      color: var(--text-primary);
+      color: #1E2761;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .items-table tbody tr {
       border-bottom: 2px solid #e5e7eb;
     }
 
@@ -344,20 +353,53 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     }
 
     .prestation-name {
-      white-space: pre-line;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       line-height: 1.4;
-      word-wrap: break-word;
       min-height: 2.5rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
 
+    .prestation-name:hover {
+      white-space: normal;
+      word-wrap: break-word;
+      overflow: visible;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 100;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 8px;
+      border-radius: 4px;
+      max-width: 400px;
+    }
+
     .description-cell {
-      white-space: pre-line;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       line-height: 1.4;
       word-wrap: break-word;
-      max-width: 200px;
+    }
+
+    .description-cell:hover {
+      white-space: normal;
+      word-wrap: break-word;
+      overflow: visible;
+      background: rgba(255, 255, 255, 0.98);
+      z-index: 1000;
+      position: relative;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      padding: 12px;
+      border-radius: 6px;
+      max-width: 500px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      font-size: 0.9rem;
+      line-height: 1.4;
     }
 
     /* Statistics Section */
@@ -515,8 +557,8 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
       padding: 0.5rem;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.875rem;
-      transition: background-color 0.2s, transform 0.1s;
+      font-size: 1rem;
+      transition: all 0.2s ease;
     }
 
     .btn-edit {

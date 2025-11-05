@@ -1,12 +1,17 @@
-# TODO: Reorganize Sidebar Navigation
+# TODO - Fix 403 Forbidden on /api/structures-mefp
+
+## Issue Analysis
+- Frontend is in development mode with `useMockAuth: true`, so no Authorization header is sent
+- Backend should allow all `/api/**` requests in development without authentication
+- Currently getting 403 Forbidden, indicating authentication is still required
 
 ## Tasks
-- [x] Add collapsible functionality to Administration section
-- [x] Add collapsible functionality to Rapports section
-- [x] Move "Tableau de Bord Équipements" from Équipements to Administration sub-items
-- [x] Move "Statistiques" from separate section to Rapports sub-items
-- [x] Remove separate Équipements section
-- [x] Remove separate Statistiques section
-- [x] Update template with section headers and arrows
-- [x] Add CSS styles for collapsible behavior
-- [x] Add component properties and methods for toggling sections
+- [ ] Verify backend is running in development mode (not production profile)
+- [ ] Update WebSecurityConfig to ensure proper development authentication bypass
+- [ ] Test the fix by attempting to create a structure via frontend
+- [ ] If still failing, check if OAuth2 resource server is accidentally enabled
+
+## Files to Check/Modify
+- backend/src/main/java/com/dgsi/maintenance/security/WebSecurityConfig.java
+- backend/src/main/resources/application.properties
+- frontend/src/environments/environment.ts (confirm useMockAuth: true)

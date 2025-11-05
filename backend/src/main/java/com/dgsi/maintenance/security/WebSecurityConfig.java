@@ -80,12 +80,15 @@ public class WebSecurityConfig {
                 // Autoriser l'accès à la console H2 pour le développement (supprimer en production)
                 .requestMatchers("/h2-console/**").permitAll()
 
-                // En développement, autoriser toutes les requêtes API SANS authentification
+                // En développement, autoriser toutes les requêtes API sans authentification
                 .requestMatchers("/api/**").permitAll()
 
                 // Exiger l'authentification pour toutes les autres requêtes (par défaut en prod)
                 .anyRequest().authenticated()
-            );
+            )
+
+            // Désactiver OAuth2 Resource Server en développement pour éviter les conflits
+            .oauth2ResourceServer(oauth2 -> oauth2.disable());
 
         return http.build();
     }
