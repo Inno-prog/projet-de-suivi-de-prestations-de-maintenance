@@ -1,11 +1,11 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8082/api',
+  apiUrl: 'http://localhost:8084/api',
   // En développement, activez ce flag pour permettre un contournement local lorsque Keycloak
   // n'est pas disponible. Ne PAS activer en production.
   devAuthBypass: false,
   // Configuration pour le développement sans Keycloak - désactivé pour utiliser Keycloak
-  useMockAuth: false
+  useMockAuth: true
 };
 
 // Configuration de l'environnement de production

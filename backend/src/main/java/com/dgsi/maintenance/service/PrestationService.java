@@ -1,5 +1,6 @@
 package com.dgsi.maintenance.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import com.dgsi.maintenance.entity.Item;
@@ -34,10 +35,125 @@ public class PrestationService {
     }
 
     /**
+     * Nouvelle méthode pour créer une prestation depuis une requête DTO
+     */
+    public Prestation createPrestationFromRequest(com.dgsi.maintenance.controller.PrestationController.PrestationCreateRequest request) {
+        log.info("🔄 Création prestation depuis requête: {}", request.getNomPrestataire());
+
+        // Convertir la requête en entité Prestation
+        Prestation prestation = convertRequestToPrestation(request);
+
+        // Validation avant la transaction
+        try {
+            validatePrestationData(prestation);
+            checkQuantityLimit(prestation);
+        } catch (IllegalArgumentException e) {
+            log.warn("❌ Validation échouée: {}", e.getMessage());
+            throw e;
+        }
+
+        // Transaction
+        return transactionTemplate.execute(status -> {
+            try {
+                // Save the prestation first
+                Prestation savedPrestation = prestationRepository.save(prestation);
+                log.info("💾 Prestation sauvegardée avec ID: {}", savedPrestation.getId());
+
+                // Gestion des items after saving the prestation
+                if (request.getItemIds() != null && !request.getItemIds().isEmpty()) {
+                    java.util.Set<Item> managedItems = new java.util.HashSet<>();
+                    for (Long itemId : request.getItemIds()) {
+                        Optional<Item> managedItem = itemRepository.findById(itemId);
+                        if (managedItem.isPresent()) {
+                            managedItems.add(managedItem.get());
+                        } else {
+                            throw new IllegalArgumentException("Item avec ID " + itemId + " n'existe pas");
+                        }
+                    }
+                    savedPrestation.setItemsUtilises(managedItems);
+                    savedPrestation = prestationRepository.save(savedPrestation);
+                    log.info("✅ {} items associés à la prestation", managedItems.size());
+                }
+
+                // CORRECTION : Gestion ordre de commande (regroupement par prestataire/trimestre)
+                try {
+                    log.info("📦 Gestion ordre de commande...");
+                    OrdreCommande ordre = ordreCommandeService.gererOrdreCommandePourPrestation(savedPrestation);
+                    savedPrestation.setOrdreCommande(ordre);
+                    log.info("✅ Ordre de commande géré - ID: {}", ordre.getId());
+                } catch (Exception e) {
+                    log.warn("⚠️ Gestion ordre de commande échouée, mais prestation sauvegardée. ID: {}", savedPrestation.getId(), e);
+                    // Continuer même si l'ordre de commande échoue
+                }
+
+                log.info("💾 Sauvegarde finale de la prestation...");
+                savedPrestation = prestationRepository.save(savedPrestation);
+                log.info("✅ Prestation sauvegardée ID: {}", savedPrestation.getId());
+
+                return savedPrestation;
+
+            } catch (Exception e) {
+                log.error("❌ Erreur lors de la sauvegarde transactionnelle", e);
+                status.setRollbackOnly();
+                throw new RuntimeException("Erreur technique lors de la création: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    /**
+     * Convertit une requête DTO en entité Prestation avec gestion des items
+     */
+    private Prestation convertRequestToPrestation(com.dgsi.maintenance.controller.PrestationController.PrestationCreateRequest request) {
+        Prestation prestation = new Prestation();
+
+        // Prestataire information
+        prestation.setPrestataireId(request.getPrestataireId());
+        prestation.setNomPrestataire(request.getNomPrestataire());
+        prestation.setNomPrestation(request.getNomPrestation());
+        prestation.setContactPrestataire(request.getContactPrestataire());
+        prestation.setStructurePrestataire(request.getStructurePrestataire());
+        prestation.setServicePrestataire(request.getServicePrestataire());
+        prestation.setRolePrestataire(request.getRolePrestataire());
+        prestation.setQualificationPrestataire(request.getQualificationPrestataire());
+
+        // Intervention details
+        prestation.setMontantIntervention(request.getMontantIntervention());
+        prestation.setEquipementsUtilisesString(request.getEquipementsUtilises());
+
+        // Dates
+        if (request.getDateHeureDebut() != null) {
+            prestation.setDateHeureDebut(java.time.LocalDateTime.parse(request.getDateHeureDebut()));
+        }
+        if (request.getDateHeureFin() != null) {
+            prestation.setDateHeureFin(java.time.LocalDateTime.parse(request.getDateHeureFin()));
+        }
+
+        // Autres champs
+        prestation.setTrimestre(request.getTrimestre());
+        prestation.setObservationsPrestataire(request.getObservationsPrestataire());
+        prestation.setStatutIntervention(request.getStatutIntervention());
+
+        // Client information
+        prestation.setNomClient(request.getNomClient());
+        prestation.setContactClient(request.getContactClient());
+        prestation.setAdresseClient(request.getAdresseClient());
+        prestation.setFonctionClient(request.getFonctionClient());
+        prestation.setObservationsClient(request.getObservationsClient());
+
+        // Items will be set in the transaction to ensure they are managed
+        prestation.setItemsUtilises(new HashSet<>());
+
+        // Valeurs par défaut
+        prestation.setNbPrestRealise(0);
+
+        return prestation;
+    }
+
+    /**
      * Création robuste avec gestion d'erreur complète
      */
     public Prestation createPrestation(Prestation prestation) {
-        log.info("🔄 Début création prestation: {}", prestation.getNomPrestation());
+        log.info("🔄 Début création prestation: {}", prestation.getNomClient() != null ? prestation.getNomClient() : "Nouvelle prestation");
 
         // Validation avant la transaction
         try {
@@ -82,37 +198,71 @@ public class PrestationService {
      */
     private void validatePrestationData(Prestation prestation) {
         log.info("🔍 Validation des données...");
-        
+
         if (prestation == null) {
             throw new IllegalArgumentException("La prestation ne peut pas être nulle");
         }
-        
-        // Validation nom prestation
-        if (prestation.getNomPrestation() == null || prestation.getNomPrestation().trim().isEmpty()) {
-            throw new IllegalArgumentException("Le nom de la prestation est obligatoire");
-        }
-        
-        // Validation nom prestataire
+
+        // Validation prestataire
         if (prestation.getNomPrestataire() == null || prestation.getNomPrestataire().trim().isEmpty()) {
             throw new IllegalArgumentException("Le nom du prestataire est obligatoire");
         }
-        
-        // Validation trimestre
+        if (prestation.getContactPrestataire() == null || prestation.getContactPrestataire().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le contact du prestataire est obligatoire");
+        }
+        if (prestation.getStructurePrestataire() == null || prestation.getStructurePrestataire().trim().isEmpty()) {
+            throw new IllegalArgumentException("La structure du prestataire est obligatoire");
+        }
+        if (prestation.getServicePrestataire() == null || prestation.getServicePrestataire().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le service du prestataire est obligatoire");
+        }
+        if (prestation.getRolePrestataire() == null || prestation.getRolePrestataire().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le rôle du prestataire est obligatoire");
+        }
+        if (prestation.getQualificationPrestataire() == null || prestation.getQualificationPrestataire().trim().isEmpty()) {
+            throw new IllegalArgumentException("La qualification du prestataire est obligatoire");
+        }
+
+        // Validation intervention
+        if (prestation.getMontantIntervention() == null || prestation.getMontantIntervention().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Le montant de l'intervention doit être positif");
+        }
         if (prestation.getTrimestre() == null || prestation.getTrimestre().trim().isEmpty()) {
             throw new IllegalArgumentException("Le trimestre est obligatoire");
         }
-        
-        // Validation montant
-        if (prestation.getMontantPrest() == null || prestation.getMontantPrest().compareTo(java.math.BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Le montant doit être positif");
+        if (prestation.getDateHeureDebut() == null) {
+            throw new IllegalArgumentException("La date et heure de début sont obligatoires");
         }
-        
-        // Vérifier que l'item existe
-        String nomItem = prestation.getNomPrestation();
-        if (!itemRepository.existsByNomItem(nomItem)) {
-            throw new IllegalArgumentException("L'item '" + nomItem + "' n'existe pas dans la base de données");
+        if (prestation.getDateHeureFin() == null) {
+            throw new IllegalArgumentException("La date et heure de fin sont obligatoires");
         }
-        
+        if (prestation.getStatutIntervention() == null || prestation.getStatutIntervention().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le statut de l'intervention est obligatoire");
+        }
+
+        // Validation client
+        if (prestation.getNomClient() == null || prestation.getNomClient().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom du client est obligatoire");
+        }
+        if (prestation.getContactClient() == null || prestation.getContactClient().trim().isEmpty()) {
+            throw new IllegalArgumentException("Le contact du client est obligatoire");
+        }
+        if (prestation.getAdresseClient() == null || prestation.getAdresseClient().trim().isEmpty()) {
+            throw new IllegalArgumentException("L'adresse du client est obligatoire");
+        }
+        if (prestation.getFonctionClient() == null || prestation.getFonctionClient().trim().isEmpty()) {
+            throw new IllegalArgumentException("La fonction du client est obligatoire");
+        }
+
+        // Vérifier que les items existent si fournis
+        if (prestation.getItemsUtilises() != null && !prestation.getItemsUtilises().isEmpty()) {
+            for (Item item : prestation.getItemsUtilises()) {
+                if (!itemRepository.existsByNomItem(item.getNomItem())) {
+                    throw new IllegalArgumentException("L'item '" + item.getNomItem() + "' n'existe pas dans la base de données");
+                }
+            }
+        }
+
         log.info("✅ Validation des données OK");
     }
 
@@ -120,45 +270,52 @@ public class PrestationService {
      * Vérification de limite améliorée
      */
     private void checkQuantityLimit(Prestation prestation) {
-        String nomItem = prestation.getNomPrestation();
-        log.info("🔍 Vérification limite pour: {}", nomItem);
+        // Vérifier les limites pour chaque item sélectionné
+        if (prestation.getItemsUtilises() != null && !prestation.getItemsUtilises().isEmpty()) {
+            for (Item item : prestation.getItemsUtilises()) {
+                String nomItem = item.getNomItem();
+                log.info("🔍 Vérification limite pour: {}", nomItem);
 
-        Optional<Item> itemOpt = itemRepository.findFirstByNomItem(nomItem);
+                Optional<Item> itemOpt = itemRepository.findFirstByNomItem(nomItem);
 
-        if (itemOpt.isEmpty()) {
-            log.error("❌ Item non trouvé: {}", nomItem);
-            throw new IllegalArgumentException("Item '" + nomItem + "' non trouvé");
+                if (itemOpt.isEmpty()) {
+                    log.error("❌ Item non trouvé: {}", nomItem);
+                    throw new IllegalArgumentException("Item '" + nomItem + "' non trouvé");
+                }
+
+                Item itemEntity = itemOpt.get();
+                Integer quantiteMax = itemEntity.getQuantiteMaxTrimestre();
+
+                // Pas de limite si quantiteMax est null, 0 ou négatif
+                if (quantiteMax == null || quantiteMax <= 0) {
+                    log.info("📝 Pas de limite pour {} (quantiteMax: {})", nomItem, quantiteMax);
+                    continue;
+                }
+
+                // Compter les prestations existantes
+                Long count;
+                try {
+                    count = prestationRepository.countByNomPrestation(nomItem);
+                    log.info("📊 Statistiques - Item: {}, Existantes: {}, Max: {}", nomItem, count, quantiteMax);
+                } catch (Exception e) {
+                    log.error("❌ Erreur lors du comptage pour {}", nomItem, e);
+                    throw new RuntimeException("Erreur technique lors de la vérification des limites");
+                }
+
+                if (count >= quantiteMax) {
+                    String errorMessage = String.format(
+                        "Limite atteinte pour '%s' (%d/%d prestations)",
+                        nomItem, count, quantiteMax
+                    );
+                    log.warn("🚫 {}", errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
+
+                log.info("✅ Limite OK pour {}: {}/{}", nomItem, count, quantiteMax);
+            }
+        } else {
+            log.info("📝 Aucune vérification de limite (pas d'items sélectionnés)");
         }
-
-        Item item = itemOpt.get();
-        Integer quantiteMax = item.getQuantiteMaxTrimestre();
-
-        // Pas de limite si quantiteMax est null, 0 ou négatif
-        if (quantiteMax == null || quantiteMax <= 0) {
-            log.info("📝 Pas de limite pour {} (quantiteMax: {})", nomItem, quantiteMax);
-            return;
-        }
-
-        // Compter les prestations existantes
-        Long count;
-        try {
-            count = prestationRepository.countByNomPrestation(nomItem);
-            log.info("📊 Statistiques - Item: {}, Existantes: {}, Max: {}", nomItem, count, quantiteMax);
-        } catch (Exception e) {
-            log.error("❌ Erreur lors du comptage pour {}", nomItem, e);
-            throw new RuntimeException("Erreur technique lors de la vérification des limites");
-        }
-
-        if (count >= quantiteMax) {
-            String errorMessage = String.format(
-                "Limite atteinte pour '%s' (%d/%d prestations)",
-                nomItem, count, quantiteMax
-            );
-            log.warn("🚫 {}", errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
-
-        log.info("✅ Limite OK: {}/{}", count, quantiteMax);
     }
 
     /**
@@ -251,7 +408,10 @@ public class PrestationService {
     @Transactional(readOnly = true)
     public List<Prestation> getAllPrestations() {
         try {
-            return prestationRepository.findAll();
+            log.info("Fetching all prestations from database");
+            List<Prestation> prestations = prestationRepository.findAll();
+            log.info("Found " + prestations.size() + " prestations in database");
+            return prestations;
         } catch (Exception e) {
             log.error("❌ Erreur lors de la récupération des prestations", e);
             throw new RuntimeException("Erreur lors de la récupération des prestations", e);
@@ -274,18 +434,18 @@ public class PrestationService {
     @Transactional(readOnly = true)
     public Long countByNomPrestation(String nomItem) {
         log.info("🔍 Comptage des prestations pour: {}", nomItem);
-        
+
         try {
             // Vérifier que l'item existe d'abord
             if (!itemRepository.existsByNomItem(nomItem)) {
                 log.warn("⚠️ Item non trouvé lors du comptage: {}", nomItem);
                 return 0L;
             }
-            
+
             Long count = prestationRepository.countByNomPrestation(nomItem);
             log.info("✅ Count pour {}: {}", nomItem, count);
             return count;
-            
+
         } catch (Exception e) {
             log.error("❌ Erreur critique lors du comptage pour: {}", nomItem, e);
             return 0L; // Retourner 0 plutôt que de faire échouer la requête

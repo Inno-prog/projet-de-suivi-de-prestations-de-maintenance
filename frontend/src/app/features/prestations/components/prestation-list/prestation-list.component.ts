@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PrestationService, Prestation } from '../../../../core/services/prestation.service';
@@ -11,16 +11,22 @@ import { PrestationFormComponent } from '../prestation-form/prestation-form.comp
 import { ItemService } from '../../../../core/services/item.service';
 import { FichePrestationService } from '../../../../core/services/fiche-prestation.service';
 import { Item, FichePrestation, StatutFiche } from '../../../../core/models/business.models';
+import { PrestationCardComponent } from '../../../../components/prestation-card/prestation-card.component';
 
 @Component({
   selector: 'app-prestation-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, PrestationCardComponent],
   template: `
     <div class="container">
         <!-- Header Section -->
-
-         
+        <div class="page-header">
+          <h1>Gestion des Prestations</h1>
+          <button class="btn btn-success" (click)="creerNouvellePrestation()">
+            <span>➕</span>
+            Nouvelle Prestation
+          </button>
+        </div>
 
         <!-- Statistics Cards -->
         <div class="stats-grid">
@@ -54,109 +60,36 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
           </div>
         </div>
 
-        <!-- Prestations Table -->
-        <div class="table-container">
-          <div class="table-header">
-            <div class="table-header-content">
-              <h3>Liste des Prestations</h3>
-              <button class="btn btn-success" (click)="creerNouvellePrestation()">
-                <span>➕</span>
-                Nouvelle Prestation
-              </button>
-            </div>
+        <!-- Prestations Cards Grid -->
+        <div class="loading-container" *ngIf="loading; else cardsContent">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Chargement des prestations...</p>
           </div>
-
-          <div class="loading-container" *ngIf="loading; else tableContent">
-            <div class="loading-spinner">
-              <div class="spinner"></div>
-              <p>Chargement des prestations...</p>
-            </div>
-          </div>
-
-          <ng-template #tableContent>
-            <div class="table-responsive">
-            <table class="prestation-table">
-              <thead>
-                <tr>
-                  <th>Prestataire</th>
-                  <th>Item</th>
-                  <th>Montant</th>
-                  <th>Équipements utilisés</th>
-                  <th>Réalisées</th>
-                  <th>Trimestre</th>
-                  <th>Période</th>
-                  <th>Statut</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let prestation of filteredPrestations" [class]="getRowClass(prestation.statut)">
-                  <td class="prestataire-cell">
-                    <div class="prestataire-info">
-                      <strong>{{ prestation.nomPrestataire }}</strong>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="prestation-info">
-                      <strong class="prestation-name" [title]="getPrestationNameTooltip(prestation.nomPrestation)">{{ getPrestationNameTruncated(prestation.nomPrestation) }}</strong>
-                      <div class="description" *ngIf="prestation.description">
-                        {{ formatDescription(prestation.description) }}
-                      </div>
-                    </div>
-                  </td>
-                  <td class="montant-cell">
-                    <span class="montant">{{ prestation.montantPrest | number:'1.0-0' }} FCFA</span>
-                  </td>
-                  <td class="text-center">
-                    <span class="badge">{{ prestation.equipementsUtilises || prestation.quantiteItem }}</span>
-                  </td>
-                  <td class="text-center">
-                    <span class="badge progress">{{ getRealizedCount(prestation).count }}/{{ getRealizedCount(prestation).max }}</span>
-                  </td>
-                  <td class="text-center">
-                    <span class="trimestre-badge">{{ prestation.trimestre }}</span>
-                  </td>
-                  <td>
-                    <div class="date-info">
-                      <div>Début: {{ prestation.dateDebut | date:'dd/MM/yyyy' }}</div>
-                      <div>Fin: {{ prestation.dateFin | date:'dd/MM/yyyy' }}</div>
-                    </div>
-                  </td>
-                  <td class="text-center">
-                    <span class="status-badge" [class]="'status-' + prestation.statut.toLowerCase().replace(' ', '-')">
-                      {{ prestation.statut }}
-                    </span>
-                  </td>
-                  <td class="actions-cell">
-                    <div class="action-buttons">
-                      <button class="btn btn-sm btn-outline" (click)="editPrestation(prestation)" title="Modifier">
-                        ✏️
-                      </button>
-                      <button class="btn btn-sm btn-danger" (click)="deletePrestation(prestation)" title="Supprimer">
-                        🗑️
-                      </button>
-                      <select *ngIf="isAdmin()" class="status-select" (change)="changeStatus(prestation, $event)" [value]="prestation.statut">
-                        <option value="en attente">En attente</option>
-                        <option value="en cours">En cours</option>
-                        <option value="terminé">Terminé</option>
-                      </select>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Empty State -->
-          <div class="empty-state" *ngIf="filteredPrestations.length === 0">
-            <div class="empty-icon">📋</div>
-            <h3>Aucune prestation trouvée</h3>
-            <p>{{ searchTerm || selectedStatut ? 'Aucun résultat ne correspond à vos critères.' : 'Aucune prestation n\'a été enregistrée pour le moment.' }}</p>
-          </div>
-          </ng-template>
         </div>
 
+        <ng-template #cardsContent>
+          <div class="prestations-grid" *ngIf="filteredPrestations.length > 0; else noData">
+            <app-prestation-card
+              *ngFor="let prestation of filteredPrestations"
+              [titre]="getPrestationCardTitle(prestation)"
+              [description]="getPrestationCardDescription(prestation)"
+              [fichierUrl]="getPrestationPdfUrl(prestation)"
+              [prestationId]="prestation.id?.toString() ?? ''"
+              (detailsClicked)="onDetailsClicked($event)"
+              (submitClicked)="onSubmitClicked($event)"
+              (deleteClicked)="onDeleteClicked($event)">
+            </app-prestation-card>
+          </div>
 
+          <ng-template #noData>
+            <div class="empty-state">
+              <div class="empty-icon">📋</div>
+              <h3>Aucune prestation trouvée</h3>
+              <p>{{ searchTerm || selectedStatut ? 'Aucun résultat ne correspond à vos critères.' : 'Aucune prestation n\'a été enregistrée pour le moment.' }}</p>
+            </div>
+          </ng-template>
+        </ng-template>
       </div>
   `,
   styles: [`
@@ -165,6 +98,48 @@ import { Item, FichePrestation, StatutFiche } from '../../../../core/models/busi
       max-width: 100vw;
       margin: 0 auto;
       width: 100%;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1E2761;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .prestations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     /* Removed prestation header styles */
@@ -652,7 +627,8 @@ export class PrestationListComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private dialog: MatDialog,
     private itemService: ItemService,
-    private fichePrestationService: FichePrestationService
+    private fichePrestationService: FichePrestationService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -701,8 +677,8 @@ export class PrestationListComponent implements OnInit {
       const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(p =>
         p.nomPrestataire.toLowerCase().includes(searchLower) ||
-        p.nomPrestation.toLowerCase().includes(searchLower) ||
-        (p.description && p.description.toLowerCase().includes(searchLower))
+        (p.nomPrestation?.toLowerCase().includes(searchLower) ?? false) ||
+        (p.description?.toLowerCase().includes(searchLower) ?? false)
       );
     }
 
@@ -725,7 +701,8 @@ export class PrestationListComponent implements OnInit {
     return { count, max };
   }
 
-  getRowClass(statut: string): string {
+  getRowClass(statut: string | undefined): string {
+    if (!statut) return '';
     switch (statut.toLowerCase()) {
       case 'terminé': return 'row-completed';
       case 'en cours': return 'row-in-progress';
@@ -865,6 +842,47 @@ export class PrestationListComponent implements OnInit {
           }
         });
       }
+    }
+  }
+
+  // Helper methods for PrestationCard component
+  getPrestationCardTitle(prestation: Prestation): string {
+    return prestation.nomPrestation || `Prestation ${prestation.id ?? 'sans ID'}`;
+  }
+
+  getPrestationCardDescription(prestation: Prestation): string {
+    const prestataire = prestation.nomPrestataire || 'Prestataire non spécifié';
+    const client = prestation.nomClient || 'Client non spécifié';
+    const montant = prestation.montantIntervention ? `${prestation.montantIntervention} FCFA` : 'Montant non défini';
+    const statutIntervention = prestation.statutIntervention || 'Statut non défini';
+
+    return `Prestataire: ${prestataire}\nClient: ${client}\nMontant intervention: ${montant}\nStatut intervention: ${statutIntervention}`;
+  }
+
+  getPrestationPdfUrl(prestation: Prestation): string | undefined {
+    // Return PDF URL if available, otherwise undefined
+    return prestation.id ? `/api/prestations/${prestation.id}/pdf` : undefined;
+  }
+
+  // Event handlers for PrestationCard component
+  onDetailsClicked(prestationId: string): void {
+    this.router.navigate(['/prestations', prestationId]);
+  }
+
+  onSubmitClicked(prestationId: string): void {
+    console.log('Soumission de la prestation:', prestationId);
+    // Navigation is handled by the component itself
+    this.toastService.show({
+      type: 'success',
+      title: 'Soumission initiée',
+      message: 'Redirection vers le dashboard prestataire...'
+    });
+  }
+
+  onDeleteClicked(prestationId: string): void {
+    const prestation = this.prestations.find(p => p.id?.toString() === prestationId);
+    if (prestation) {
+      this.deletePrestation(prestation);
     }
   }
 

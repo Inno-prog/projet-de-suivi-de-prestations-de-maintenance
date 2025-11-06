@@ -1,0 +1,116 @@
+<div class="container">
+  <div class="page-header">
+    <h1>Tableau de Bord Prestataire</h1>
+    <p>Gestion de vos prestations et rapports</p>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon info">
+        <i class="fas fa-list"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ prestations.length }}</h3>
+        <p>Total Prestations</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getPrestationsByStatus('réussi').length }}</h3>
+        <p>Réussies</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getPrestationsByStatus('réussi nécessite autre intervention').length }}</h3>
+        <p>Nécessitent autre intervention</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon primary">
+        <i class="fas fa-paper-plane"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ getPrestationsByStatus('soumis').length }}</h3>
+        <p>Soumises</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des prestations -->
+  <div class="prestations-section">
+    <h2>Mes Prestations</h2>
+
+    <div class="prestations-list" *ngIf="!loading; else loadingTemplate">
+      <div *ngIf="prestations.length > 0; else noPrestations">
+        <div class="prestation-card" *ngFor="let prestation of prestations">
+          <div class="prestation-header">
+            <div class="prestation-info">
+              <h3>Prestation #{{ prestation.id }}</h3>
+              <p class="client-name">{{ prestation.nomClient }}</p>
+            </div>
+            <div class="prestation-status">
+              <span class="badge" [class]="'badge-' + getStatusColor(prestation.statutIntervention)">
+                {{ getStatusLabel(prestation.statutIntervention) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="prestation-details">
+            <div class="detail-row">
+              <span class="label">Date début:</span>
+              <span class="value">{{ formatDateTime(prestation.dateHeureDebut) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Date fin:</span>
+              <span class="value">{{ formatDateTime(prestation.dateHeureFin) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Montant:</span>
+              <span class="value">{{ prestation.montantIntervention }} €</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Trimestre:</span>
+              <span class="value">{{ prestation.trimestre }}</span>
+            </div>
+          </div>
+
+          <div class="prestation-actions">
+            <button class="btn btn-info btn-sm" (click)="viewPrestationDetails(prestation)">
+              <i class="fas fa-eye"></i> Voir détails
+            </button>
+            <button class="btn btn-primary btn-sm" (click)="downloadPrestationPDF(prestation)">
+              <i class="fas fa-download"></i> Télécharger PDF
+            </button>
+            <button
+              class="btn btn-success btn-sm"
+              (click)="submitPrestation(prestation)"
+              *ngIf="prestation.statutIntervention !== 'soumis'"
+            >
+              <i class="fas fa-paper-plane"></i> Soumettre
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noPrestations>
+        <div class="no-data">
+          <p>Aucune prestation trouvée</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <ng-template #loadingTemplate>
+      <div class="loading">
+        <p>Chargement des prestations...</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -29,6 +29,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class WebSecurityConfig {
 
     @Bean
+    public String profile() {
+        return System.getProperty("spring.profiles.active", "default");
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         boolean isProduction = "production".equals(System.getProperty("spring.profiles.active"));
 

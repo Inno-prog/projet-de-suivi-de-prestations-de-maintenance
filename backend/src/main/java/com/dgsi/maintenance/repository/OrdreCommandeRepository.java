@@ -29,7 +29,7 @@ public interface OrdreCommandeRepository extends JpaRepository<OrdreCommande, Lo
     @Query("SELECT oc FROM OrdreCommande oc LEFT JOIN FETCH oc.items WHERE oc.id = :id")
     java.util.Optional<OrdreCommande> findByIdWithItems(@Param("id") Long id);
 
-    @Query("SELECT DISTINCT oc FROM OrdreCommande oc LEFT JOIN FETCH oc.prestations")
+    @Query("SELECT DISTINCT oc FROM OrdreCommande oc LEFT JOIN FETCH oc.prestations p")
     List<OrdreCommande> findAllWithPrestations();
 
     // Existing methods

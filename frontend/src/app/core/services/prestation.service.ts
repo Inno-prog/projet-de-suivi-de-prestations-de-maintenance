@@ -7,16 +7,41 @@ import { environment } from '../../../environments/environment';
 
 export interface Prestation {
   id?: number;
+  // Prestataire information
+  prestataireId?: string;
   nomPrestataire: string;
-  nomPrestation: string;
-  montantPrest: number;
-  equipementsUtilises: number;
-  quantiteItem?: number; // Kept for backward compatibility
-  nbPrestRealise: number;
-  trimestre: string;
-  dateDebut: string;
-  dateFin: string;
-  statut: string;
+  contactPrestataire?: string;
+  structurePrestataire?: string;
+  servicePrestataire?: string;
+  rolePrestataire?: string;
+  qualificationPrestataire?: string;
+
+  // Intervention details
+  montantIntervention?: number;
+  equipementsUtilises?: string;
+  equipementsUtilisesString?: string;
+  dateHeureDebut?: string;
+  dateHeureFin?: string;
+  observationsPrestataire?: string;
+  statutIntervention?: string;
+
+  // Client information
+  nomClient?: string;
+  contactClient?: string;
+  adresseClient?: string;
+  fonctionClient?: string;
+  observationsClient?: string;
+
+  // Legacy fields for backward compatibility
+  nomPrestation?: string;
+  montantPrest?: number;
+  equipementsUtilisesLegacy?: number;
+  quantiteItem?: number;
+  nbPrestRealise?: number;
+  trimestre?: string;
+  dateDebut?: string;
+  dateFin?: string;
+  statut?: string;
   description?: string;
   ordreCommande?: {
     id: number;
@@ -34,9 +59,17 @@ export class PrestationService {
   constructor(private http: HttpClient) {}
 
   getAllPrestations(): Observable<Prestation[]> {
+    console.log('🔄 Chargement des prestations depuis:', this.apiUrl);
     return this.http.get<Prestation[]>(this.apiUrl).pipe(
+      tap(prestations => console.log('✅ Prestations chargées:', prestations?.length || 0, 'éléments')),
       catchError(error => {
         console.error('❌ Erreur chargement prestations:', error);
+        console.error('Détails erreur:', {
+          status: error.status,
+          statusText: error.statusText,
+          url: error.url,
+          message: error.message
+        });
         return of([]); // Retourner tableau vide
       })
     );
@@ -147,9 +180,9 @@ export class PrestationService {
   // Gestion d'erreur pour la création
   private handleCreateError(error: HttpErrorResponse) {
     console.error('❌ Erreur création prestation:', error);
-    
+
     let userMessage = 'Erreur lors de la création';
-    
+
     if (error.status === 400) {
       // Erreur de validation backend
       if (error.error && error.error.message) {
@@ -162,8 +195,12 @@ export class PrestationService {
     } else if (error.status === 0) {
       userMessage = 'Impossible de se connecter au serveur';
     }
-    
+
     return throwError(() => new Error(userMessage));
+  }
+
+  exportPrestationPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
   }
 
 }

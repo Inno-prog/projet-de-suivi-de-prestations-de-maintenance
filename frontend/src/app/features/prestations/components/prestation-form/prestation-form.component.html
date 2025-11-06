@@ -1,215 +1,581 @@
 <div class="modal-overlay" *ngIf="showForm">
-  <div class="modal-content form-modal" (click)="$event.stopPropagation()">
+  <div class="modal-content form-modal wizard-modal" (click)="$event.stopPropagation()">
     <form [formGroup]="prestationForm" (ngSubmit)="onSubmit()" class="prestation-form">
-      <h2 class="form-title">{{ isEditMode ? 'Modifier la Prestation' : 'Nouvelle Prestation' }}</h2>
-    <!-- Section Informations de base -->
-    <div class="form-section">
-      <div class="section-header">
-        <h3>Informations de base</h3>
-        <div class="section-divider"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="nomPrestataire">Prestataire</label>
-        <select
-          id="nomPrestataire"
-          formControlName="nomPrestataire"
-          class="line-input"
-          [class.error]="prestationForm.get('nomPrestataire')?.invalid && prestationForm.get('nomPrestataire')?.touched"
-        >
-          <option value="" disabled>Sélectionnez un prestataire</option>
-          <option *ngFor="let prestataire of prestataires" [value]="prestataire.nom">
-            {{ prestataire.nom }}
-          </option>
-        </select>
-        <div class="input-line" [class.error]="prestationForm.get('nomPrestataire')?.invalid && prestationForm.get('nomPrestataire')?.touched"></div>
-        <div class="error-message" *ngIf="prestationForm.get('nomPrestataire')?.invalid && prestationForm.get('nomPrestataire')?.touched">
-          <span *ngIf="prestationForm.get('nomPrestataire')?.errors?.['required']">Le prestataire est requis</span>
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+          <span class="step-number">1</span>
+          <span class="step-label">Prestataire</span>
+        </div>
+        <div class="step-connector" [class.active]="currentStep > 1"></div>
+        <div class="step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+          <span class="step-number">2</span>
+          <span class="step-label">Intervention</span>
+        </div>
+        <div class="step-connector" [class.active]="currentStep > 2"></div>
+        <div class="step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+          <span class="step-number">3</span>
+          <span class="step-label">Client</span>
+        </div>
+        <div class="step-connector" [class.active]="currentStep > 3"></div>
+        <div class="step" [class.active]="currentStep >= 4">
+          <span class="step-number">4</span>
+          <span class="step-label">Récapitulatif</span>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="nomPrestation">Item</label>
-        <select
-          id="nomPrestation"
-          formControlName="nomPrestation"
-          class="line-input"
-          [class.error]="prestationForm.get('nomPrestation')?.invalid && prestationForm.get('nomPrestation')?.touched"
-        >
-          <option value="" disabled>Sélectionnez un item</option>
-          <option *ngFor="let item of items" [value]="item.nomItem">
-            {{ item.nomItem }}
-          </option>
-        </select>
-        <div class="input-line" [class.error]="prestationForm.get('nomPrestation')?.invalid && prestationForm.get('nomPrestation')?.touched"></div>
-        <div class="error-message" *ngIf="prestationForm.get('nomPrestation')?.invalid && prestationForm.get('nomPrestation')?.touched">
-          <span *ngIf="prestationForm.get('nomPrestation')?.errors?.['required']">L'item est requis</span>
-        </div>
-        <!-- Ajoutez cette section après le champ de sélection de l'item -->
-        <div *ngIf="selectedItem" class="prestation-counter">
-          <p class="counter-info">
-            Prestations créées pour <strong>{{selectedItem.nomItem}}</strong> :
-            <span [class.limit-reached]="existingPrestationsCount >= maxQuantityForTrimestre">
-              {{existingPrestationsCount}}/{{maxQuantityForTrimestre}}
-            </span>
-          </p>
-          <p *ngIf="existingPrestationsCount >= maxQuantityForTrimestre" class="warning-message">
-            ⚠️ Le nombre limite de prestations pour cet item est atteint
-          </p>
-          <p *ngIf="existingPrestationsCount < maxQuantityForTrimestre" class="info-message">
-            Il reste {{maxQuantityForTrimestre - existingPrestationsCount}} prestation(s) disponible(s)
-          </p>
-        </div>
-      </div>
+      <h2 class="form-title">{{ stepTitles[currentStep - 1] }}</h2>
+      <!-- Step 1: Informations du Prestataire -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Informations du Prestataire</h3>
+            <div class="section-divider"></div>
+          </div>
 
-      <div class="form-group">
-        <label for="montantPrest">Montant</label>
-        <input
-          type="number"
-          id="montantPrest"
-          formControlName="montantPrest"
-          placeholder="0"
-          class="line-input"
-          [class.error]="prestationForm.get('montantPrest')?.invalid && prestationForm.get('montantPrest')?.touched"
-        />
-        <div class="input-line" [class.error]="prestationForm.get('montantPrest')?.invalid && prestationForm.get('montantPrest')?.touched"></div>
-        <div class="error-message" *ngIf="prestationForm.get('montantPrest')?.invalid && prestationForm.get('montantPrest')?.touched">
-          <span *ngIf="prestationForm.get('montantPrest')?.errors?.['required']">Le montant est requis</span>
-          <span *ngIf="prestationForm.get('montantPrest')?.errors?.['min']">Le montant doit être positif</span>
-        </div>
-      </div>
+          <div class="form-group">
+            <label for="prestataireSelection">Sélectionner un prestataire existant</label>
+            <select
+              id="prestataireSelection"
+              formControlName="prestataireSelection"
+              class="line-input"
+            >
+              <option value="">Choisir un prestataire existant</option>
+              <option *ngFor="let prestataire of prestataires" [value]="prestataire.id">
+                {{ prestataire.nom }} - {{ prestataire.role }} ({{ prestataire.qualification }})
+              </option>
+              <option value="new">Nouveau prestataire</option>
+            </select>
+            <div class="input-line"></div>
+            <small class="info-text">Sélectionnez un prestataire existant ou choisissez "Nouveau prestataire" pour saisir manuellement</small>
+          </div>
 
-      <div class="form-group">
-        <label for="equipementsUtilises">Équipements utilisés</label>
-        <select
-          id="equipementsUtilises"
-          formControlName="equipementsUtilises"
-          class="line-input"
-          multiple
-          (change)="onEquipementSelectionChange($event)"
-        >
-          <option *ngFor="let equipement of equipements" [value]="equipement.id">
-            {{ equipement.nomEquipement }} ({{ equipement.typeEquipement }})
-          </option>
-        </select>
-        <div class="input-line"></div>
-        <div class="selected-equipements" *ngIf="selectedEquipements.length > 0">
-          <small>Équipements sélectionnés: {{ selectedEquipements.length }}</small>
-        </div>
-      </div>
+          <div class="form-group" *ngIf="isNewPrestataire || selectedPrestataire">
+            <label for="nomPrestataire">Nom du prestataire</label>
+            <input
+              type="text"
+              id="nomPrestataire"
+              formControlName="nomPrestataire"
+              placeholder="Entrez le nom du prestataire"
+              class="line-input"
+              [class.error]="prestationForm.get('nomPrestataire')?.invalid && prestationForm.get('nomPrestataire')?.touched"
+              [readonly]="!!selectedPrestataire"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('nomPrestataire')?.invalid && prestationForm.get('nomPrestataire')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('nomPrestataire')?.invalid && prestationForm.get('nomPrestataire')?.touched">
+              <span *ngIf="prestationForm.get('nomPrestataire')?.errors?.['required']">Le nom du prestataire est requis</span>
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label for="trimestre">Trimestre</label>
-        <select
-          id="trimestre"
-          formControlName="trimestre"
-          class="line-input"
-          [class.error]="prestationForm.get('trimestre')?.invalid && prestationForm.get('trimestre')?.touched"
-        >
-          <option value="" disabled>Sélectionnez un trimestre</option>
-          <option *ngFor="let trimestre of trimestreOptions" [value]="trimestre.value">
-            {{ trimestre.label }}
-          </option>
-        </select>
-        <div class="input-line" [class.error]="prestationForm.get('trimestre')?.invalid && prestationForm.get('trimestre')?.touched"></div>
-        <div class="error-message" *ngIf="prestationForm.get('trimestre')?.invalid && prestationForm.get('trimestre')?.touched">
-          <span *ngIf="prestationForm.get('trimestre')?.errors?.['required']">Le trimestre est requis</span>
-        </div>
-      </div>
-    </div>
+          <div class="form-group" *ngIf="isNewPrestataire || selectedPrestataire">
+            <label for="contactPrestataire">Contact</label>
+            <input
+              type="text"
+              id="contactPrestataire"
+              formControlName="contactPrestataire"
+              placeholder="Numéro de téléphone ou email"
+              class="line-input"
+              [class.error]="prestationForm.get('contactPrestataire')?.invalid && prestationForm.get('contactPrestataire')?.touched"
+              [readonly]="!!selectedPrestataire"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('contactPrestataire')?.invalid && prestationForm.get('contactPrestataire')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('contactPrestataire')?.invalid && prestationForm.get('contactPrestataire')?.touched">
+              <span *ngIf="prestationForm.get('contactPrestataire')?.errors?.['required']">Le contact est requis</span>
+            </div>
+          </div>
 
-    <!-- Section Période -->
-    <div class="form-section">
-      <div class="section-header">
-        <h3>Période</h3>
-        <div class="section-divider"></div>
-      </div>
+          <div class="form-group" *ngIf="isNewPrestataire || selectedPrestataire">
+            <label for="structurePrestataire">Structure</label>
+            <input
+              type="text"
+              id="structurePrestataire"
+              formControlName="structurePrestataire"
+              placeholder="Nom de la structure"
+              class="line-input"
+              [class.error]="prestationForm.get('structurePrestataire')?.invalid && prestationForm.get('structurePrestataire')?.touched"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('structurePrestataire')?.invalid && prestationForm.get('structurePrestataire')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('structurePrestataire')?.invalid && prestationForm.get('structurePrestataire')?.touched">
+              <span *ngIf="prestationForm.get('structurePrestataire')?.errors?.['required']">La structure est requise</span>
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label for="dateDebut">Date de début</label>
-        <input
-          type="date"
-          id="dateDebut"
-          formControlName="dateDebut"
-          class="line-input"
-          [class.error]="prestationForm.get('dateDebut')?.invalid && prestationForm.get('dateDebut')?.touched"
-        />
-        <div class="input-line" [class.error]="prestationForm.get('dateDebut')?.invalid && prestationForm.get('dateDebut')?.touched"></div>
-        <div class="error-message" *ngIf="prestationForm.get('dateDebut')?.invalid && prestationForm.get('dateDebut')?.touched">
-          <span *ngIf="prestationForm.get('dateDebut')?.errors?.['required']">La date de début est requise</span>
-        </div>
-      </div>
+          <div class="form-group" *ngIf="isNewPrestataire || selectedPrestataire">
+            <label for="servicePrestataire">Service</label>
+            <input
+              type="text"
+              id="servicePrestataire"
+              formControlName="servicePrestataire"
+              placeholder="Service dans lequel le prestataire travaille"
+              class="line-input"
+              [class.error]="prestationForm.get('servicePrestataire')?.invalid && prestationForm.get('servicePrestataire')?.touched"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('servicePrestataire')?.invalid && prestationForm.get('servicePrestataire')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('servicePrestataire')?.invalid && prestationForm.get('servicePrestataire')?.touched">
+              <span *ngIf="prestationForm.get('servicePrestataire')?.errors?.['required']">Le service est requis</span>
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label for="dateFin">Date de fin</label>
-        <input
-          type="date"
-          id="dateFin"
-          formControlName="dateFin"
-          class="line-input"
-          [class.error]="prestationForm.get('dateFin')?.invalid && prestationForm.get('dateFin')?.touched"
-        />
-        <div class="input-line" [class.error]="prestationForm.get('dateFin')?.invalid && prestationForm.get('dateFin')?.touched"></div>
-        <div class="error-message" *ngIf="prestationForm.get('dateFin')?.invalid && prestationForm.get('dateFin')?.touched">
-          <span *ngIf="prestationForm.get('dateFin')?.hasError('required')">La date de fin est requise</span>
-        </div>
-      </div>
-    </div>
+          <div class="form-group" *ngIf="isNewPrestataire || selectedPrestataire">
+            <label for="rolePrestataire">Rôle</label>
+            <input
+              type="text"
+              id="rolePrestataire"
+              formControlName="rolePrestataire"
+              placeholder="Rôle du prestataire"
+              class="line-input"
+              [class.error]="prestationForm.get('rolePrestataire')?.invalid && prestationForm.get('rolePrestataire')?.touched"
+              [readonly]="!!selectedPrestataire"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('rolePrestataire')?.invalid && prestationForm.get('rolePrestataire')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('rolePrestataire')?.invalid && prestationForm.get('rolePrestataire')?.touched">
+              <span *ngIf="prestationForm.get('rolePrestataire')?.errors?.['required']">Le rôle est requis</span>
+            </div>
+          </div>
 
-    <!-- Section Statut et Description -->
-    <div class="form-section">
-      <div class="section-header">
-        <h3>Statut et Description</h3>
-        <div class="section-divider"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="statut">Statut</label>
-        <select
-          id="statut"
-          formControlName="statut"
-          class="line-input"
-          [class.error]="prestationForm.get('statut')?.invalid && prestationForm.get('statut')?.touched"
-        >
-          <option value="" disabled>Sélectionnez un statut</option>
-          <option *ngFor="let statut of statutOptions" [value]="statut.value">
-            {{ statut.label }}
-          </option>
-        </select>
-        <div class="input-line" [class.error]="prestationForm.get('statut')?.invalid && prestationForm.get('statut')?.touched"></div>
-        <div class="error-message" *ngIf="prestationForm.get('statut')?.invalid && prestationForm.get('statut')?.touched">
-          <span *ngIf="prestationForm.get('statut')?.errors?.['required']">Le statut est requis</span>
+          <div class="form-group" *ngIf="isNewPrestataire || selectedPrestataire">
+            <label for="qualificationPrestataire">Qualification</label>
+            <input
+              type="text"
+              id="qualificationPrestataire"
+              formControlName="qualificationPrestataire"
+              placeholder="Qualification du prestataire"
+              class="line-input"
+              [class.error]="prestationForm.get('qualificationPrestataire')?.invalid && prestationForm.get('qualificationPrestataire')?.touched"
+              [readonly]="!!selectedPrestataire"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('qualificationPrestataire')?.invalid && prestationForm.get('qualificationPrestataire')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('qualificationPrestataire')?.invalid && prestationForm.get('qualificationPrestataire')?.touched">
+              <span *ngIf="prestationForm.get('qualificationPrestataire')?.errors?.['required']">La qualification est requise</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea
-          id="description"
-          formControlName="description"
-          placeholder="Ajoutez une description détaillée de la prestation (optionnel)"
-          class="line-input"
-          rows="4"
-        ></textarea>
-        <div class="input-line"></div>
-      </div>
-    </div>
+      <!-- Step 2: Détails de l'Intervention -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Détails de l'Intervention</h3>
+            <div class="section-divider"></div>
+          </div>
 
-    <!-- Actions -->
-    <div class="form-actions">
-      <button type="button" class="btn btn-outline" (click)="onCancel()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Annuler
-      </button>
-      <button type="submit" class="btn btn-primary" [disabled]="!prestationForm.valid">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        {{ isEditMode ? 'Modifier' : 'Créer' }}
-      </button>
-    </div>
+          <div class="form-group">
+            <label>Items couverts par l'intervention</label>
+            <div class="checkbox-group">
+              <div *ngFor="let item of items" class="checkbox-item">
+                <input
+                  type="checkbox"
+                  [id]="'item-' + item.id"
+                  [checked]="isItemSelected(item)"
+                  (change)="onItemSelectionChange(item, $event)"
+                />
+                <label [for]="'item-' + item.id">{{ item.nomItem }}</label>
+              </div>
+            </div>
+            <div class="error-message" *ngIf="prestationForm.get('itemsCouverts')?.invalid && prestationForm.get('itemsCouverts')?.touched">
+              <span *ngIf="prestationForm.get('itemsCouverts')?.errors?.['required']">Au moins un item doit être sélectionné</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="montantIntervention">Montant de l'intervention</label>
+            <input
+              type="number"
+              id="montantIntervention"
+              formControlName="montantIntervention"
+              placeholder="0"
+              class="line-input"
+              [class.error]="prestationForm.get('montantIntervention')?.invalid && prestationForm.get('montantIntervention')?.touched"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('montantIntervention')?.invalid && prestationForm.get('montantIntervention')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('montantIntervention')?.invalid && prestationForm.get('montantIntervention')?.touched">
+              <span *ngIf="prestationForm.get('montantIntervention')?.errors?.['required']">Le montant est requis</span>
+              <span *ngIf="prestationForm.get('montantIntervention')?.errors?.['min']">Le montant doit être positif</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="equipementsUtilises">Équipements utilisés</label>
+            <input
+              type="text"
+              id="equipementsUtilises"
+              formControlName="equipementsUtilises"
+              placeholder="Liste des équipements utilisés"
+              class="line-input"
+            />
+            <div class="input-line"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="trimestre">Trimestre</label>
+            <select
+              id="trimestre"
+              formControlName="trimestre"
+              class="line-input"
+              [class.error]="prestationForm.get('trimestre')?.invalid && prestationForm.get('trimestre')?.touched"
+            >
+              <option value="" disabled>Sélectionnez un trimestre</option>
+              <option *ngFor="let trimestre of trimestreOptions" [value]="trimestre.value">
+                {{ trimestre.label }}
+              </option>
+            </select>
+            <div class="input-line" [class.error]="prestationForm.get('trimestre')?.invalid && prestationForm.get('trimestre')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('trimestre')?.invalid && prestationForm.get('trimestre')?.touched">
+              <span *ngIf="prestationForm.get('trimestre')?.errors?.['required']">Le trimestre est requis</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label for="dateDebut">Date de début</label>
+              <input
+                type="date"
+                id="dateDebut"
+                formControlName="dateDebut"
+                class="line-input"
+                [class.error]="prestationForm.get('dateDebut')?.invalid && prestationForm.get('dateDebut')?.touched"
+              />
+              <div class="input-line" [class.error]="prestationForm.get('dateDebut')?.invalid && prestationForm.get('dateDebut')?.touched"></div>
+              <div class="error-message" *ngIf="prestationForm.get('dateDebut')?.invalid && prestationForm.get('dateDebut')?.touched">
+                <span *ngIf="prestationForm.get('dateDebut')?.errors?.['required']">La date de début est requise</span>
+              </div>
+            </div>
+
+            <div class="form-group half">
+              <label for="heureDebut">Heure de début</label>
+              <input
+                type="time"
+                id="heureDebut"
+                formControlName="heureDebut"
+                class="line-input"
+                [class.error]="prestationForm.get('heureDebut')?.invalid && prestationForm.get('heureDebut')?.touched"
+              />
+              <div class="input-line" [class.error]="prestationForm.get('heureDebut')?.invalid && prestationForm.get('heureDebut')?.touched"></div>
+              <div class="error-message" *ngIf="prestationForm.get('heureDebut')?.invalid && prestationForm.get('heureDebut')?.touched">
+                <span *ngIf="prestationForm.get('heureDebut')?.errors?.['required']">L'heure de début est requise</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label for="dateFin">Date de fin</label>
+              <input
+                type="date"
+                id="dateFin"
+                formControlName="dateFin"
+                class="line-input"
+                [class.error]="prestationForm.get('dateFin')?.invalid && prestationForm.get('dateFin')?.touched"
+              />
+              <div class="input-line" [class.error]="prestationForm.get('dateFin')?.invalid && prestationForm.get('dateFin')?.touched"></div>
+              <div class="error-message" *ngIf="prestationForm.get('dateFin')?.invalid && prestationForm.get('dateFin')?.touched">
+                <span *ngIf="prestationForm.get('dateFin')?.errors?.['required']">La date de fin est requise</span>
+              </div>
+            </div>
+
+            <div class="form-group half">
+              <label for="heureFin">Heure de fin</label>
+              <input
+                type="time"
+                id="heureFin"
+                formControlName="heureFin"
+                class="line-input"
+                [class.error]="prestationForm.get('heureFin')?.invalid && prestationForm.get('heureFin')?.touched"
+              />
+              <div class="input-line" [class.error]="prestationForm.get('heureFin')?.invalid && prestationForm.get('heureFin')?.touched"></div>
+              <div class="error-message" *ngIf="prestationForm.get('heureFin')?.invalid && prestationForm.get('heureFin')?.touched">
+                <span *ngIf="prestationForm.get('heureFin')?.errors?.['required']">L'heure de fin est requise</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="observationsPrestataire">Observations du prestataire</label>
+            <textarea
+              id="observationsPrestataire"
+              formControlName="observationsPrestataire"
+              placeholder="Observations du prestataire (optionnel)"
+              class="line-input"
+              rows="3"
+            ></textarea>
+            <div class="input-line"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="statutIntervention">Statut de l'intervention</label>
+            <select
+              id="statutIntervention"
+              formControlName="statutIntervention"
+              class="line-input"
+              [class.error]="prestationForm.get('statutIntervention')?.invalid && prestationForm.get('statutIntervention')?.touched"
+            >
+              <option value="" disabled>Sélectionnez un statut</option>
+              <option *ngFor="let statut of statutOptions" [value]="statut.value">
+                {{ statut.label }}
+              </option>
+            </select>
+            <div class="input-line" [class.error]="prestationForm.get('statutIntervention')?.invalid && prestationForm.get('statutIntervention')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('statutIntervention')?.invalid && prestationForm.get('statutIntervention')?.touched">
+              <span *ngIf="prestationForm.get('statutIntervention')?.errors?.['required']">Le statut est requis</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Informations du Client -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Informations du Client</h3>
+            <div class="section-divider"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="clientSelection">Sélectionner un client existant</label>
+            <select
+              id="clientSelection"
+              formControlName="clientSelection"
+              class="line-input"
+            >
+              <option value="">-- Choisir un client --</option>
+              <option *ngFor="let structure of structuresMefp" [value]="structure.id">
+                {{ structure.nom }} ({{ structure.ville }})
+              </option>
+              <option value="new">-- Nouveau client --</option>
+            </select>
+            <div class="input-line"></div>
+          </div>
+
+          <div class="form-group" *ngIf="isNewClient || !selectedClient">
+            <label for="nomClient">Nom du client</label>
+            <input
+              type="text"
+              id="nomClient"
+              formControlName="nomClient"
+              placeholder="Entrez le nom du client"
+              class="line-input"
+              [class.error]="prestationForm.get('nomClient')?.invalid && prestationForm.get('nomClient')?.touched"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('nomClient')?.invalid && prestationForm.get('nomClient')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('nomClient')?.invalid && prestationForm.get('nomClient')?.touched">
+              <span *ngIf="prestationForm.get('nomClient')?.errors?.['required']">Le nom du client est requis</span>
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="isNewClient || !selectedClient">
+            <label for="contactClient">Contact</label>
+            <input
+              type="text"
+              id="contactClient"
+              formControlName="contactClient"
+              placeholder="Numéro de téléphone ou email"
+              class="line-input"
+              [class.error]="prestationForm.get('contactClient')?.invalid && prestationForm.get('contactClient')?.touched"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('contactClient')?.invalid && prestationForm.get('contactClient')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('contactClient')?.invalid && prestationForm.get('contactClient')?.touched">
+              <span *ngIf="prestationForm.get('contactClient')?.errors?.['required']">Le contact est requis</span>
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="isNewClient || !selectedClient">
+            <label for="adresseClient">Adresse</label>
+            <input
+              type="text"
+              id="adresseClient"
+              formControlName="adresseClient"
+              placeholder="Adresse complète"
+              class="line-input"
+              [class.error]="prestationForm.get('adresseClient')?.invalid && prestationForm.get('adresseClient')?.touched"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('adresseClient')?.invalid && prestationForm.get('adresseClient')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('adresseClient')?.invalid && prestationForm.get('adresseClient')?.touched">
+              <span *ngIf="prestationForm.get('adresseClient')?.errors?.['required']">L'adresse est requise</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fonctionClient">Fonction</label>
+            <input
+              type="text"
+              id="fonctionClient"
+              formControlName="fonctionClient"
+              placeholder="Fonction du client"
+              class="line-input"
+              [class.error]="prestationForm.get('fonctionClient')?.invalid && prestationForm.get('fonctionClient')?.touched"
+            />
+            <div class="input-line" [class.error]="prestationForm.get('fonctionClient')?.invalid && prestationForm.get('fonctionClient')?.touched"></div>
+            <div class="error-message" *ngIf="prestationForm.get('fonctionClient')?.invalid && prestationForm.get('fonctionClient')?.touched">
+              <span *ngIf="prestationForm.get('fonctionClient')?.errors?.['required']">La fonction est requise</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="observationsClient">Observations</label>
+            <textarea
+              id="observationsClient"
+              formControlName="observationsClient"
+              placeholder="Observations du client (optionnel)"
+              class="line-input"
+              rows="3"
+            ></textarea>
+            <div class="input-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Récapitulatif -->
+      <div *ngIf="currentStep === 4" class="step-content">
+        <div class="form-section">
+          <div class="section-header">
+            <h3>Récapitulatif de la Prestation</h3>
+            <div class="section-divider"></div>
+          </div>
+
+          <div class="summary-section">
+            <h4>Informations du Prestataire</h4>
+            <div class="summary-item">
+              <span class="label">Nom:</span>
+              <span class="value">{{ getFormValue('nomPrestataire') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Contact:</span>
+              <span class="value">{{ getFormValue('contactPrestataire') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Structure:</span>
+              <span class="value">{{ getFormValue('structurePrestataire') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Service:</span>
+              <span class="value">{{ getFormValue('servicePrestataire') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Rôle:</span>
+              <span class="value">{{ getFormValue('rolePrestataire') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Qualification:</span>
+              <span class="value">{{ getFormValue('qualificationPrestataire') }}</span>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <h4>Détails de l'Intervention</h4>
+            <div class="summary-item">
+              <span class="label">Items couverts:</span>
+              <span class="value">{{ getSelectedItemsNames() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Montant:</span>
+              <span class="value">{{ getFormValue('montantIntervention') }} €</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Équipements:</span>
+              <span class="value">{{ getFormValue('equipementsUtilises') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Trimestre:</span>
+              <span class="value">{{ getTrimestreLabel() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Début:</span>
+              <span class="value">{{ getFormValue('dateDebut') }} à {{ getFormValue('heureDebut') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Fin:</span>
+              <span class="value">{{ getFormValue('dateFin') }} à {{ getFormValue('heureFin') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Observations:</span>
+              <span class="value">{{ getFormValue('observationsPrestataire') || 'Aucune' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Statut:</span>
+              <span class="value">{{ getStatutLabel() }}</span>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <h4>Informations du Client</h4>
+            <div class="summary-item" *ngIf="selectedClient">
+              <span class="label">Structure sélectionnée:</span>
+              <span class="value">{{ selectedClient.nom }} ({{ selectedClient.ville }})</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Nom:</span>
+              <span class="value">{{ getFormValue('nomClient') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Contact:</span>
+              <span class="value">{{ getFormValue('contactClient') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Adresse:</span>
+              <span class="value">{{ getFormValue('adresseClient') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Fonction:</span>
+              <span class="value">{{ getFormValue('fonctionClient') }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Observations:</span>
+              <span class="value">{{ getFormValue('observationsClient') || 'Aucune' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" (click)="onCancel()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Annuler
+        </button>
+
+        <div class="navigation-buttons">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="previousStep()"
+            [disabled]="currentStep === 1"
+            *ngIf="currentStep > 1"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Précédent
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="nextStep()"
+            [disabled]="!canProceedToNext()"
+            *ngIf="currentStep < totalSteps"
+          >
+            Suivant
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-success"
+            [disabled]="!prestationForm.valid"
+            *ngIf="currentStep === totalSteps"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Valider la Prestation
+          </button>
+        </div>
+      </div>
   </form>
   </div>
 </div>

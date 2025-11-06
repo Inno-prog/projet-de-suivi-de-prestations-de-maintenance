@@ -25,7 +25,7 @@ import { ConfirmationService } from '../../../../core/services/confirmation.serv
     <div class="container" *ngIf="authService.isAuthenticated()">
         <div class="dashboard-header">
           <div class="welcome-section">
-            <h1>Bienvenue sur <span class="text-primary">DGSI Maintenance</span></h1>
+            <h1>Bienvenue sur <span class="text-primary">MainTrack Pro</span></h1>
             <p *ngIf="authService.isAuthenticated()">
               Bonjour <strong>{{ authService.getCurrentUser()?.nom }}</strong> -
               <span class="user-role" [class]="getRoleClass()">

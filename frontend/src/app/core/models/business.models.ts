@@ -221,6 +221,7 @@ export interface Prestation {
   nomPrestation: string;
   montantPrest: number;
   equipementsUtilises: Equipement[];
+  equipementsUtilisesString?: string;
   quantiteItem?: number; // Kept for backward compatibility
   nbPrestRealise: number;
   trimestre: string;
@@ -229,6 +230,23 @@ export interface Prestation {
   statut: string;
   description?: string;
   ordreCommande?: OrdreCommande;
+  // Enhanced fields
+  prestataireId?: string;
+  contactPrestataire?: string;
+  structurePrestataire?: string;
+  servicePrestataire?: string;
+  rolePrestataire?: string;
+  qualificationPrestataire?: string;
+  montantIntervention?: number;
+  dateHeureDebut?: string;
+  dateHeureFin?: string;
+  observationsPrestataire?: string;
+  statutIntervention?: string;
+  nomClient?: string;
+  contactClient?: string;
+  adresseClient?: string;
+  fonctionClient?: string;
+  observationsClient?: string;
 }
 
 export interface RapportSuivi {

@@ -31,12 +31,101 @@ public class PrestationController {
         this.prestationService = prestationService;
     }
 
+    // DTO for prestation creation request
+    public static class PrestationCreateRequest {
+        private String prestataireId;
+        private String nomPrestataire;
+        private String nomPrestation;
+        private String contactPrestataire;
+        private String structurePrestataire;
+        private String servicePrestataire;
+        private String rolePrestataire;
+        private String qualificationPrestataire;
+        private java.math.BigDecimal montantIntervention;
+        private String equipementsUtilises;
+        private List<Long> itemIds;
+        private String trimestre;
+        private String dateHeureDebut;
+        private String dateHeureFin;
+        private String observationsPrestataire;
+        private String statutIntervention;
+        private String nomClient;
+        private String contactClient;
+        private String adresseClient;
+        private String fonctionClient;
+        private String observationsClient;
+
+        // Getters and setters
+        public String getPrestataireId() { return prestataireId; }
+        public void setPrestataireId(String prestataireId) { this.prestataireId = prestataireId; }
+
+        public String getNomPrestataire() { return nomPrestataire; }
+        public void setNomPrestataire(String nomPrestataire) { this.nomPrestataire = nomPrestataire; }
+
+        public String getNomPrestation() { return nomPrestation; }
+        public void setNomPrestation(String nomPrestation) { this.nomPrestation = nomPrestation; }
+
+        public String getContactPrestataire() { return contactPrestataire; }
+        public void setContactPrestataire(String contactPrestataire) { this.contactPrestataire = contactPrestataire; }
+
+        public String getStructurePrestataire() { return structurePrestataire; }
+        public void setStructurePrestataire(String structurePrestataire) { this.structurePrestataire = structurePrestataire; }
+
+        public String getServicePrestataire() { return servicePrestataire; }
+        public void setServicePrestataire(String servicePrestataire) { this.servicePrestataire = servicePrestataire; }
+
+        public String getRolePrestataire() { return rolePrestataire; }
+        public void setRolePrestataire(String rolePrestataire) { this.rolePrestataire = rolePrestataire; }
+
+        public String getQualificationPrestataire() { return qualificationPrestataire; }
+        public void setQualificationPrestataire(String qualificationPrestataire) { this.qualificationPrestataire = qualificationPrestataire; }
+
+        public java.math.BigDecimal getMontantIntervention() { return montantIntervention; }
+        public void setMontantIntervention(java.math.BigDecimal montantIntervention) { this.montantIntervention = montantIntervention; }
+
+        public String getEquipementsUtilises() { return equipementsUtilises; }
+        public void setEquipementsUtilises(String equipementsUtilises) { this.equipementsUtilises = equipementsUtilises; }
+
+        public List<Long> getItemIds() { return itemIds; }
+        public void setItemIds(List<Long> itemIds) { this.itemIds = itemIds; }
+
+        public String getTrimestre() { return trimestre; }
+        public void setTrimestre(String trimestre) { this.trimestre = trimestre; }
+
+        public String getDateHeureDebut() { return dateHeureDebut; }
+        public void setDateHeureDebut(String dateHeureDebut) { this.dateHeureDebut = dateHeureDebut; }
+
+        public String getDateHeureFin() { return dateHeureFin; }
+        public void setDateHeureFin(String dateHeureFin) { this.dateHeureFin = dateHeureFin; }
+
+        public String getObservationsPrestataire() { return observationsPrestataire; }
+        public void setObservationsPrestataire(String observationsPrestataire) { this.observationsPrestataire = observationsPrestataire; }
+
+        public String getStatutIntervention() { return statutIntervention; }
+        public void setStatutIntervention(String statutIntervention) { this.statutIntervention = statutIntervention; }
+
+        public String getNomClient() { return nomClient; }
+        public void setNomClient(String nomClient) { this.nomClient = nomClient; }
+
+        public String getContactClient() { return contactClient; }
+        public void setContactClient(String contactClient) { this.contactClient = contactClient; }
+
+        public String getAdresseClient() { return adresseClient; }
+        public void setAdresseClient(String adresseClient) { this.adresseClient = adresseClient; }
+
+        public String getFonctionClient() { return fonctionClient; }
+        public void setFonctionClient(String fonctionClient) { this.fonctionClient = fonctionClient; }
+
+        public String getObservationsClient() { return observationsClient; }
+        public void setObservationsClient(String observationsClient) { this.observationsClient = observationsClient; }
+    }
+
     @PostMapping
-    public ResponseEntity<?> createPrestation(@Valid @RequestBody Prestation prestation) {
-        log.info("📥 Requête POST pour créer une prestation: {}", prestation.getNomPrestation());
+    public ResponseEntity<?> createPrestation(@Valid @RequestBody PrestationCreateRequest request) {
+        log.info("📥 Requête POST pour créer une prestation: {}", request.getNomPrestataire() != null ? request.getNomPrestataire() : "Nouvelle prestation");
 
         try {
-            Prestation createdPrestation = prestationService.createPrestation(prestation);
+            Prestation createdPrestation = prestationService.createPrestationFromRequest(request);
             log.info("✅ Prestation créée avec succès ID: {}", createdPrestation.getId());
 
             return ResponseEntity.ok(createdPrestation);
@@ -83,7 +172,9 @@ public class PrestationController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getAllPrestations() {
         try {
+            log.info("📥 GET /api/prestations - Récupération de toutes les prestations");
             List<Prestation> prestations = prestationService.getAllPrestations();
+            log.info("✅ {} prestations récupérées avec succès", prestations.size());
             return ResponseEntity.ok(prestations);
         } catch (Exception e) {
             log.error("❌ Erreur lors de la récupération des prestations", e);
